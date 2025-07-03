@@ -55,7 +55,7 @@ public class AuthenticationService {
      */
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
         // Authentifizierung über UserService
-        User user = userService.authenticateUser(request.getUsername(), request.getPassword());
+        User user = userService.authenticateUser(request.getUsernameOrEmail(), request.getPassword());
 
         // JWT-Tokens generieren
         String accessToken = jwtService.generateToken(user);
