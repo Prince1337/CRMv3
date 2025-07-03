@@ -1,0 +1,66 @@
+<div class="login-container">
+  <div class="login-card">
+    <div class="login-header">
+      <h1>Anmelden</h1>
+      <p>Melden Sie sich mit Ihren Zugangsdaten an</p>
+    </div>
+
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+      <!-- Username Field -->
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input
+          type="text"
+          id="username"
+          formControlName="username"
+          placeholder="Ihr Username"
+          autocomplete="username"
+          [class.invalid]="isFieldInvalid('username')"
+        />
+        <div class="error-message" *ngIf="isFieldInvalid('username')">
+          {{ getErrorMessage('username') }}
+        </div>
+      </div>
+
+      <!-- Password Field -->
+      <div class="form-group">
+        <label for="password">Passwort</label>
+        <input
+          type="password"
+          id="password"
+          formControlName="password"
+          placeholder="Ihr Passwort"
+          autocomplete="current-password"
+          [class.invalid]="isFieldInvalid('password')"
+        />
+        <div class="error-message" *ngIf="isFieldInvalid('password')">
+          {{ getErrorMessage('password') }}
+        </div>
+      </div>
+
+      <!-- Error Message -->
+      <div class="error-message global-error" *ngIf="errorMessage">
+        {{ errorMessage }}
+      </div>
+
+      <!-- Submit Button -->
+      <button
+        type="submit"
+        class="login-button"
+        [disabled]="loginForm.invalid || isLoading"
+      >
+        <span *ngIf="!isLoading">Anmelden</span>
+        <span *ngIf="isLoading" class="loading-spinner">
+          <svg class="spinner" viewBox="0 0 50 50">
+            <circle class="path" cx="25" cy="25" r="20" fill="none" stroke-width="5"></circle>
+          </svg>
+          Anmeldung läuft...
+        </span>
+      </button>
+    </form>
+
+    <div class="login-footer">
+      <p>Noch kein Konto? <a routerLink="/register">Jetzt registrieren</a></p>
+    </div>
+  </div>
+</div> 
