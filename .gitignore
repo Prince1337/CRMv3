@@ -1,3 +1,17 @@
-.cursor\rules\rules.mdc
+# Cursor IDE
+.cursor/
+.cursorrules
+.cursor-rules
 
-.vscode
+# VS Code
+.vscode/
+
+# IDE generell
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generiert
+.DS_Store
+Thumbs.db
