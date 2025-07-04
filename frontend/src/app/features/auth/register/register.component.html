@@ -1,135 +1,117 @@
 <div class="register-container">
   <div class="register-card">
     <div class="register-header">
-      <h1>Registrieren</h1>
-      <p>Erstellen Sie Ihr Konto für den crm-v3</p>
+      <h1>CRM v3</h1>
+      <p>Registrieren</p>
     </div>
 
     <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="register-form">
-      <!-- Username Field -->
+      <div class="form-row">
+        <div class="form-group">
+          <label for="firstName">Vorname</label>
+          <input
+            type="text"
+            id="firstName"
+            formControlName="firstName"
+            [class.invalid]="isFieldInvalid('firstName')"
+            placeholder="Vorname eingeben"
+          />
+          <div class="error-message" *ngIf="isFieldInvalid('firstName')">
+            {{ getErrorMessage('firstName') }}
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="lastName">Nachname</label>
+          <input
+            type="text"
+            id="lastName"
+            formControlName="lastName"
+            [class.invalid]="isFieldInvalid('lastName')"
+            placeholder="Nachname eingeben"
+          />
+          <div class="error-message" *ngIf="isFieldInvalid('lastName')">
+            {{ getErrorMessage('lastName') }}
+          </div>
+        </div>
+      </div>
+
       <div class="form-group">
-        <label for="username">Username</label>
+        <label for="username">Benutzername</label>
         <input
           type="text"
           id="username"
           formControlName="username"
-          placeholder="Ihr Username"
-          autocomplete="username"
           [class.invalid]="isFieldInvalid('username')"
+          placeholder="Benutzername eingeben"
         />
         <div class="error-message" *ngIf="isFieldInvalid('username')">
           {{ getErrorMessage('username') }}
         </div>
       </div>
 
-      <!-- Email Field -->
       <div class="form-group">
-        <label for="email">Email</label>
+        <label for="email">E-Mail</label>
         <input
           type="email"
           id="email"
           formControlName="email"
-          placeholder="ihre.email@beispiel.de"
-          autocomplete="email"
           [class.invalid]="isFieldInvalid('email')"
+          placeholder="E-Mail-Adresse eingeben"
         />
         <div class="error-message" *ngIf="isFieldInvalid('email')">
           {{ getErrorMessage('email') }}
         </div>
       </div>
 
-      <!-- First Name Field -->
-      <div class="form-group">
-        <label for="firstName">Vorname</label>
-        <input
-          type="text"
-          id="firstName"
-          formControlName="firstName"
-          placeholder="Ihr Vorname"
-          autocomplete="given-name"
-          [class.invalid]="isFieldInvalid('firstName')"
-        />
-        <div class="error-message" *ngIf="isFieldInvalid('firstName')">
-          {{ getErrorMessage('firstName') }}
-        </div>
-      </div>
-
-      <!-- Last Name Field -->
-      <div class="form-group">
-        <label for="lastName">Nachname</label>
-        <input
-          type="text"
-          id="lastName"
-          formControlName="lastName"
-          placeholder="Ihr Nachname"
-          autocomplete="family-name"
-          [class.invalid]="isFieldInvalid('lastName')"
-        />
-        <div class="error-message" *ngIf="isFieldInvalid('lastName')">
-          {{ getErrorMessage('lastName') }}
-        </div>
-      </div>
-
-      <!-- Password Field -->
       <div class="form-group">
         <label for="password">Passwort</label>
         <input
           type="password"
           id="password"
           formControlName="password"
-          placeholder="Ihr Passwort (mindestens 6 Zeichen)"
-          autocomplete="new-password"
           [class.invalid]="isFieldInvalid('password')"
+          placeholder="Passwort eingeben"
         />
         <div class="error-message" *ngIf="isFieldInvalid('password')">
           {{ getErrorMessage('password') }}
         </div>
       </div>
 
-      <!-- Confirm Password Field -->
       <div class="form-group">
         <label for="confirmPassword">Passwort bestätigen</label>
         <input
           type="password"
           id="confirmPassword"
           formControlName="confirmPassword"
-          placeholder="Passwort wiederholen"
-          autocomplete="new-password"
           [class.invalid]="isFieldInvalid('confirmPassword')"
+          placeholder="Passwort wiederholen"
         />
         <div class="error-message" *ngIf="isFieldInvalid('confirmPassword')">
           {{ getErrorMessage('confirmPassword') }}
         </div>
       </div>
 
-      <!-- Success Message -->
-      <div class="success-message" *ngIf="successMessage">
-        {{ successMessage }}
-      </div>
-
-      <!-- Error Message -->
       <div class="error-message global-error" *ngIf="errorMessage">
         {{ errorMessage }}
       </div>
 
-      <!-- Submit Button -->
+      <div class="success-message" *ngIf="successMessage">
+        {{ successMessage }}
+      </div>
+
       <button
         type="submit"
+        [disabled]="isLoading || registerForm.invalid"
         class="register-button"
-        [disabled]="registerForm.invalid || isLoading"
       >
         <span *ngIf="!isLoading">Registrieren</span>
-        <span *ngIf="isLoading" class="loading-spinner">
-          <svg class="spinner" viewBox="0 0 50 50">
-            <circle class="path" cx="25" cy="25" r="20" fill="none" stroke-width="5"></circle>
-          </svg>
-          Registrierung läuft...
-        </span>
+        <span *ngIf="isLoading">Registrierung läuft...</span>
       </button>
     </form>
 
     <div class="register-footer">
-      <p>Bereits ein Konto? <a routerLink="/login">Jetzt anmelden</a></p>
+      <p>Bereits ein Konto? <a routerLink="/login">Anmelden</a></p>
     </div>
   </div>
 </div> 

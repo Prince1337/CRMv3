@@ -18,8 +18,12 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -45,6 +49,14 @@ class CustomerControllerTest {
 
     @BeforeEach
     void setUp() {
+        // Mock-Benutzer für Tests erstellen
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+            "testuser",
+            null,
+            Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"))
+        );
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
         testUser = User.builder()
                 .id(1L)
                 .username("testuser")

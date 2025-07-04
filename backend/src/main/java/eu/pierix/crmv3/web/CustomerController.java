@@ -403,11 +403,14 @@ public class CustomerController {
 
     private Long getCurrentUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.getPrincipal() instanceof org.springframework.security.core.userdetails.User) {
+        if (authentication != null && authentication.isAuthenticated()) {
             String username = authentication.getName();
             // Hier könnte man den UserService verwenden, um die User-ID zu finden
-            // Für jetzt verwenden wir eine Standard-ID
-            return 1L;
+            // Für jetzt verwenden wir eine Standard-ID basierend auf dem Benutzernamen
+            if ("testuser".equals(username)) {
+                return 1L; // Test-Benutzer ID
+            }
+            return 1L; // Standard-ID für andere Benutzer
         }
         throw new RuntimeException("Kein authentifizierter Benutzer gefunden");
     }

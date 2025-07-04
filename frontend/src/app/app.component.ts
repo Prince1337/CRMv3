@@ -1,8 +1,8 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterOutlet } from '@angular/router';
-import { AuthService } from './core/services/auth.service';
 import { take } from 'rxjs/operators';
+import { AuthService } from './core/services/auth.service';
 
 @Component({
   selector: 'app-root',
@@ -26,10 +26,10 @@ export class AppComponent implements OnInit {
 
   ngOnInit(): void {
     // Prüfe den Authentifizierungsstatus beim Start
-    this.authService.isAuthenticated$.pipe(take(1)).subscribe(isAuthenticated => {
+    this.authService.authState$.pipe(take(1)).subscribe(authState => {
       const currentPath = this.router.url;
       
-      if (isAuthenticated) {
+      if (authState.isAuthenticated) {
         // Wenn authentifiziert und auf Login/Register, zum Dashboard weiterleiten
         if (currentPath === '/login' || currentPath === '/register' || currentPath === '/') {
           this.router.navigate(['/dashboard']);

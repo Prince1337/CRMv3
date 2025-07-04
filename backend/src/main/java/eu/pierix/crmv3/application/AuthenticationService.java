@@ -35,11 +35,27 @@ public class AuthenticationService {
      */
     public RegisterResponse register(RegisterRequest request) {
         try {
-            userService.registerUser(request);
+            // Benutzer registrieren
+            User user = userService.registerUser(request);
+
+            // JWT-Tokens generieren (automatisches Login nach Registrierung)
+            String accessToken = jwtService.generateToken(user);
+            String refreshToken = jwtService.generateRefreshToken(user);
+
+            // Tokens in Datenbank speichern
+            LocalDateTime accessExpiresAt = LocalDateTime.now().plusSeconds(jwtExpiration / 1000);
+            LocalDateTime refreshExpiresAt = LocalDateTime.now().plusSeconds(refreshExpiration / 1000);
+
+            tokenService.saveToken(accessToken, user, TokenType.BEARER, accessExpiresAt);
+            tokenService.saveToken(refreshToken, user, TokenType.BEARER, refreshExpiresAt);
 
             return RegisterResponse.builder()
-                    .message("Benutzer erfolgreich registriert")
+                    .message("Benutzer erfolgreich registriert und automatisch eingeloggt")
                     .success(true)
+                    .accessToken(accessToken)
+                    .refreshToken(refreshToken)
+                    .tokenType("Bearer")
+                    .expiresIn(jwtExpiration)
                     .build();
 
         } catch (Exception e) {

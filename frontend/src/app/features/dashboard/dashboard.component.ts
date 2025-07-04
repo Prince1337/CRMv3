@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
+import { UserProfile } from '../../core/models/auth.models';
 
 @Component({
   selector: 'app-dashboard',
@@ -9,130 +10,184 @@ import { AuthService } from '../../core/services/auth.service';
   imports: [CommonModule],
   template: `
     <div class="dashboard-container">
-      <div class="dashboard-header">
-        <h1>Willkommen beim crm-v3</h1>
-        <p>Sie sind erfolgreich angemeldet!</p>
-      </div>
-      
-      <div class="dashboard-content">
-        <div class="welcome-card">
-          <h2>Dashboard</h2>
-          <p>Hier können Sie Ihre crmnnements verwalten und berechnen.</p>
-          
-          <div class="user-info" *ngIf="currentUser">
-            <h3>Benutzerinformationen</h3>
-            <p><strong>Name:</strong> {{ currentUser.firstName }} {{ currentUser.lastName }}</p>
-            <p><strong>Username:</strong> {{ currentUser.username }}</p>
-            <p><strong>Email:</strong> {{ currentUser.email }}</p>
-            <p><strong>Rolle:</strong> {{ currentUser.role }}</p>
+      <header class="dashboard-header">
+        <div class="header-content">
+          <h1>CRM v3 Dashboard</h1>
+          <div class="user-info">
+            <span>Willkommen, {{ currentUser?.firstName }} {{ currentUser?.lastName }}</span>
+            <button (click)="logout()" class="logout-button">Abmelden</button>
           </div>
         </div>
-        
-        <div class="actions">
-          <button class="btn btn-primary" (click)="logout()">Abmelden</button>
+      </header>
+
+      <main class="dashboard-main">
+        <div class="welcome-card">
+          <h2>Willkommen im CRM v3</h2>
+          <p>Sie sind erfolgreich angemeldet als {{ currentUser?.username }}</p>
+          <p>Rolle: {{ getRoleDisplayName() }}</p>
         </div>
-      </div>
+
+        <div class="quick-actions">
+          <h3>Schnellzugriff</h3>
+          <div class="action-buttons">
+            <button (click)="navigateToCustomers()" class="action-button">
+              Kunden verwalten
+            </button>
+            <button *ngIf="isAdmin()" (click)="navigateToStatistics()" class="action-button">
+              Statistiken
+            </button>
+          </div>
+        </div>
+      </main>
     </div>
   `,
   styles: [`
     .dashboard-container {
       min-height: 100vh;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      padding: 20px;
+      background: #f8fafc;
     }
-    
+
     .dashboard-header {
-      text-align: center;
-      color: white;
-      margin-bottom: 40px;
+      background: white;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 1rem 0;
     }
-    
-    .dashboard-header h1 {
-      font-size: 2.5rem;
-      margin-bottom: 10px;
-    }
-    
-    .dashboard-content {
-      max-width: 800px;
+
+    .header-content {
+      max-width: 1200px;
       margin: 0 auto;
+      padding: 0 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
-    
+
+    .header-content h1 {
+      margin: 0;
+      color: #1e293b;
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .user-info span {
+      color: #64748b;
+      font-size: 0.875rem;
+    }
+
+    .logout-button {
+      background: #ef4444;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 0.375rem;
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .logout-button:hover {
+      background: #dc2626;
+    }
+
+    .dashboard-main {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
     .welcome-card {
       background: white;
-      border-radius: 12px;
-      padding: 30px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-      margin-bottom: 20px;
+      border-radius: 0.5rem;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     }
-    
+
     .welcome-card h2 {
-      color: #333;
-      margin-bottom: 15px;
-    }
-    
-    .user-info {
-      margin-top: 20px;
-      padding: 20px;
-      background: #f8f9fa;
-      border-radius: 8px;
-    }
-    
-    .user-info h3 {
-      color: #333;
-      margin-bottom: 15px;
-    }
-    
-    .user-info p {
-      margin: 8px 0;
-      color: #666;
-    }
-    
-    .actions {
-      text-align: center;
-    }
-    
-    .btn {
-      padding: 12px 24px;
-      border: none;
-      border-radius: 8px;
-      font-size: 16px;
+      margin: 0 0 1rem 0;
+      color: #1e293b;
+      font-size: 1.25rem;
       font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s ease;
     }
-    
-    .btn-primary {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+
+    .welcome-card p {
+      margin: 0.5rem 0;
+      color: #64748b;
+    }
+
+    .quick-actions {
+      background: white;
+      border-radius: 0.5rem;
+      padding: 2rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .quick-actions h3 {
+      margin: 0 0 1rem 0;
+      color: #1e293b;
+      font-size: 1.125rem;
+      font-weight: 600;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .action-button {
+      background: #3b82f6;
       color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 0.375rem;
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: background-color 0.2s;
     }
-    
-    .btn-primary:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+
+    .action-button:hover {
+      background: #2563eb;
+    }
+
+    @media (max-width: 768px) {
+      .header-content {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+      }
+
+      .user-info {
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      .dashboard-main {
+        padding: 1rem;
+      }
+
+      .action-buttons {
+        flex-direction: column;
+      }
     }
   `]
 })
-export class DashboardComponent {
-  currentUser: any = null;
+export class DashboardComponent implements OnInit {
+  currentUser: UserProfile | null = null;
 
   constructor(
     private authService: AuthService,
     private router: Router
-  ) {
-    this.loadUserProfile();
-  }
+  ) {}
 
-  loadUserProfile(): void {
-    this.authService.getProfile().subscribe({
-      next: (user) => {
-        this.currentUser = user;
-      },
-      error: (error) => {
-        console.error('Fehler beim Laden des Benutzerprofils:', error);
-        // Bei Fehlern zur Login-Seite weiterleiten
-        this.router.navigate(['/login']);
-      }
-    });
+  ngOnInit(): void {
+    this.currentUser = this.authService.getCurrentUser();
   }
 
   logout(): void {
@@ -141,9 +196,28 @@ export class DashboardComponent {
         this.router.navigate(['/login']);
       },
       error: (error) => {
-        console.error('Fehler beim Logout:', error);
+        console.error('Logout error:', error);
         this.router.navigate(['/login']);
       }
     });
+  }
+
+  getRoleDisplayName(): string {
+    if (this.authService.isAdmin()) {
+      return 'Administrator';
+    }
+    return 'Benutzer';
+  }
+
+  isAdmin(): boolean {
+    return this.authService.isAdmin();
+  }
+
+  navigateToCustomers(): void {
+    this.router.navigate(['/customers']);
+  }
+
+  navigateToStatistics(): void {
+    this.router.navigate(['/statistics']);
   }
 } 

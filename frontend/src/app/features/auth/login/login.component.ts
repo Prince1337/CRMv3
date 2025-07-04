@@ -1,29 +1,28 @@
-import { Component, inject } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
-import { LoginRequest } from '../../../core/models/auth.model';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss']
 })
 export class LoginComponent {
-  private fb = inject(FormBuilder);
-  private authService = inject(AuthService);
-  private router = inject(Router);
-
   loginForm: FormGroup;
   isLoading = false;
   errorMessage = '';
 
-  constructor() {
+  constructor(
+    private fb: FormBuilder,
+    private authService: AuthService,
+    private router: Router
+  ) {
     this.loginForm = this.fb.group({
-      username: ['', [Validators.required, Validators.minLength(3)]],
+      usernameOrEmail: ['', [Validators.required]],
       password: ['', [Validators.required, Validators.minLength(6)]]
     });
   }
@@ -32,43 +31,19 @@ export class LoginComponent {
     if (this.loginForm.valid) {
       this.isLoading = true;
       this.errorMessage = '';
-      this.disableForm();
 
-      const loginRequest: LoginRequest = this.loginForm.value;
-
-      this.authService.login(loginRequest).subscribe({
-        next: (response) => {
-          this.isLoading = false;
-          console.log('Login erfolgreich:', response);
+      this.authService.login(this.loginForm.value).subscribe({
+        next: () => {
           this.router.navigate(['/dashboard']);
         },
         error: (error) => {
+          this.errorMessage = error.message;
           this.isLoading = false;
-          this.enableForm();
-          console.error('Login fehlgeschlagen:', error);
-          
-          if (error.status === 401) {
-            this.errorMessage = 'Ungültige Anmeldedaten. Bitte überprüfen Sie Username und Passwort.';
-          } else if (error.status === 0) {
-            this.errorMessage = 'Verbindung zum Server fehlgeschlagen. Bitte überprüfen Sie Ihre Internetverbindung.';
-          } else {
-            this.errorMessage = 'Ein Fehler ist aufgetreten. Bitte versuchen Sie es später erneut.';
-          }
         }
       });
     } else {
       this.markFormGroupTouched();
     }
-  }
-
-  private disableForm(): void {
-    this.loginForm.get('username')?.disable();
-    this.loginForm.get('password')?.disable();
-  }
-
-  private enableForm(): void {
-    this.loginForm.get('username')?.enable();
-    this.loginForm.get('password')?.enable();
   }
 
   private markFormGroupTouched(): void {
@@ -80,26 +55,28 @@ export class LoginComponent {
 
   getErrorMessage(fieldName: string): string {
     const field = this.loginForm.get(fieldName);
+    
     if (field?.hasError('required')) {
-      return `${this.getFieldDisplayName(fieldName)} ist erforderlich.`;
+      return `${this.getFieldDisplayName(fieldName)} ist erforderlich`;
     }
-    if (field?.hasError('minlength')) {
-      const requiredLength = field.getError('minlength').requiredLength;
-      return `${this.getFieldDisplayName(fieldName)} muss mindestens ${requiredLength} Zeichen lang sein.`;
+    
+    if (fieldName === 'password' && field?.hasError('minlength')) {
+      return 'Passwort muss mindestens 6 Zeichen lang sein';
     }
+    
     return '';
   }
 
   private getFieldDisplayName(fieldName: string): string {
-    const fieldNames: { [key: string]: string } = {
-      username: 'Username',
+    const displayNames: { [key: string]: string } = {
+      usernameOrEmail: 'Benutzername oder E-Mail',
       password: 'Passwort'
     };
-    return fieldNames[fieldName] || fieldName;
+    return displayNames[fieldName] || fieldName;
   }
 
   isFieldInvalid(fieldName: string): boolean {
     const field = this.loginForm.get(fieldName);
-    return !!(field && field.invalid && (field.dirty || field.touched));
+    return !!(field?.invalid && field?.touched);
   }
 } 

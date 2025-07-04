@@ -37,29 +37,29 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
-        
+
         final String authHeader = request.getHeader("Authorization");
         final String jwt;
         final String username;
-        
+
         // Prüfe ob Authorization-Header vorhanden und gültig ist
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
-        
+
         // Extrahiere JWT-Token aus Authorization-Header
         jwt = authHeader.substring(7);
-        
+
         try {
             // Extrahiere Username aus JWT-Token
             username = jwtService.extractUsername(jwt);
-            
+
             // Wenn Username extrahiert wurde und kein Benutzer im Security Context ist
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 // Lade UserDetails
                 UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
-                
+
                 // Validiere JWT-Token (sowohl JWT als auch Datenbank-Validierung)
                 if (jwtService.isTokenValid(jwt, userDetails) && tokenService.isTokenValid(jwt)) {
                     // Erstelle Authentication Token
@@ -68,10 +68,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                             null,
                             userDetails.getAuthorities()
                     );
-                    
+
                     // Setze Details
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                    
+
                     // Setze Authentication im Security Context
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 }
@@ -81,7 +81,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             // Der Request wird dann als unauthentifiziert behandelt
             logger.error("Fehler bei JWT-Token-Validierung: " + e.getMessage());
         }
-        
+
         // Führe Filter-Chain fort
         filterChain.doFilter(request, response);
     }

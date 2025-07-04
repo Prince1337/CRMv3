@@ -1,5 +1,5 @@
 export interface LoginRequest {
-  username: string;
+  usernameOrEmail: string;
   password: string;
 }
 
@@ -19,18 +19,23 @@ export interface AuthResponse {
 }
 
 export interface RegisterResponse {
-  message: string;
   success: boolean;
+  message: string;
+  userId: number;
 }
 
-export interface User {
+export interface UserProfile {
   id: number;
   username: string;
   email: string;
   firstName: string;
   lastName: string;
-  role: string;
-  enabled: boolean;
-  createdAt: string;
-  lastLogin: string;
+  roles: string[];
+}
+
+export interface AuthState {
+  isAuthenticated: boolean;
+  user: UserProfile | null;
+  accessToken: string | null;
+  refreshToken: string | null;
 } 

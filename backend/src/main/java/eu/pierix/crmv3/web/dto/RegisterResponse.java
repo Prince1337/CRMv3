@@ -6,7 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * DTO für Registrierungs-Responses (Schlanke Version)
+ * DTO für Registrierungs-Responses mit Token-Informationen
  */
 @Data
 @Builder
@@ -16,4 +16,8 @@ public class RegisterResponse {
 
     private String message;
     private boolean success;
+    private String accessToken;
+    private String refreshToken;
+    private String tokenType;
+    private long expiresIn;
 } 
