@@ -17,8 +17,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -249,6 +251,128 @@ public class CustomerController {
         return ResponseEntity.ok(response);
     }
 
+    // Vertriebs-Pipeline Endpunkte
+    /**
+     * Findet alle Kunden in der Vertriebs-Pipeline
+     */
+    @GetMapping("/pipeline")
+    public ResponseEntity<Map<String, List<CustomerResponse>>> getPipelineCustomers() {
+        Map<String, List<CustomerResponse>> pipeline = new HashMap<>();
+        
+        // Alle Pipeline-Status durchgehen
+        for (CustomerStatus status : CustomerStatus.values()) {
+            if (status.isPipelineStatus()) {
+                List<Customer> customers = customerService.findCustomersByStatus(status);
+                List<CustomerResponse> response = customers.stream()
+                        .map(this::mapToCustomerResponse)
+                        .collect(Collectors.toList());
+                pipeline.put(status.name(), response);
+            }
+        }
+        
+        return ResponseEntity.ok(pipeline);
+    }
+
+    /**
+     * Findet Kunden mit einem bestimmten Pipeline-Status
+     */
+    @GetMapping("/pipeline/{status}")
+    public ResponseEntity<List<CustomerResponse>> getPipelineCustomersByStatus(@PathVariable CustomerStatus status) {
+        if (!status.isPipelineStatus()) {
+            return ResponseEntity.badRequest().build();
+        }
+        
+        List<Customer> customers = customerService.findCustomersByStatus(status);
+        List<CustomerResponse> response = customers.stream()
+                .map(this::mapToCustomerResponse)
+                .collect(Collectors.toList());
+        
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Ändert den Status eines Kunden in der Pipeline
+     */
+    @PatchMapping("/{id}/pipeline-status")
+    public ResponseEntity<CustomerResponse> changePipelineStatus(
+            @PathVariable Long id,
+            @RequestParam CustomerStatus newStatus) {
+        
+        if (!newStatus.isPipelineStatus()) {
+            return ResponseEntity.badRequest().build();
+        }
+        
+        Customer customer = customerService.changeCustomerStatus(id, newStatus);
+        CustomerResponse response = mapToCustomerResponse(customer);
+        
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Bewegt einen Kunden zum nächsten Status in der Pipeline
+     */
+    @PatchMapping("/{id}/next-pipeline-step")
+    public ResponseEntity<CustomerResponse> moveToNextPipelineStep(@PathVariable Long id) {
+        Optional<Customer> customerOpt = customerService.findById(id);
+        if (customerOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        
+        Customer customer = customerOpt.get();
+        CustomerStatus currentStatus = customer.getStatus();
+        CustomerStatus[] nextStatuses = currentStatus.getNextPossibleStatuses();
+        
+        if (nextStatuses.length == 0) {
+            return ResponseEntity.badRequest().build();
+        }
+        
+        // Standardmäßig zum ersten nächsten Status wechseln
+        CustomerStatus nextStatus = nextStatuses[0];
+        Customer updatedCustomer = customerService.changeCustomerStatus(id, nextStatus);
+        CustomerResponse response = mapToCustomerResponse(updatedCustomer);
+        
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Gibt Pipeline-Statistiken zurück
+     */
+    @GetMapping("/pipeline/statistics")
+    public ResponseEntity<Map<String, Object>> getPipelineStatistics() {
+        Map<String, Object> statistics = new HashMap<>();
+        
+        // Anzahl pro Pipeline-Status
+        Map<String, Long> customersByPipelineStatus = new HashMap<>();
+        for (CustomerStatus status : CustomerStatus.values()) {
+            if (status.isPipelineStatus()) {
+                long count = customerService.countCustomersByStatus(status);
+                customersByPipelineStatus.put(status.getDisplayName(), count);
+            }
+        }
+        statistics.put("customersByPipelineStatus", customersByPipelineStatus);
+        
+        // Gesamtanzahl in Pipeline
+        long totalInPipeline = customersByPipelineStatus.values().stream().mapToLong(Long::longValue).sum();
+        statistics.put("totalInPipeline", totalInPipeline);
+        
+        // Conversion-Rate (Gewonnen / Gesamt)
+        long wonCount = customerService.countCustomersByStatus(CustomerStatus.WON);
+        long lostCount = customerService.countCustomersByStatus(CustomerStatus.LOST);
+        long totalClosed = wonCount + lostCount;
+        
+        if (totalClosed > 0) {
+            double conversionRate = (double) wonCount / totalClosed * 100;
+            statistics.put("conversionRate", Math.round(conversionRate * 100.0) / 100.0);
+        } else {
+            statistics.put("conversionRate", 0.0);
+        }
+        
+        statistics.put("wonCount", wonCount);
+        statistics.put("lostCount", lostCount);
+        
+        return ResponseEntity.ok(statistics);
+    }
+
     // Status-Management
     /**
      * Ändert den Status eines Kunden
@@ -314,6 +438,13 @@ public class CustomerController {
         long inactiveCustomers = customerService.countCustomersByStatus(CustomerStatus.INACTIVE);
         long potentialCustomers = customerService.countCustomersByStatus(CustomerStatus.POTENTIAL);
         
+        // Pipeline-spezifische Statistiken
+        long wonCustomers = customerService.countCustomersByStatus(CustomerStatus.WON);
+        long lostCustomers = customerService.countCustomersByStatus(CustomerStatus.LOST);
+        long customersInPipeline = customerService.countCustomersByStatus(CustomerStatus.NEW) +
+                                 customerService.countCustomersByStatus(CustomerStatus.CONTACTED) +
+                                 customerService.countCustomersByStatus(CustomerStatus.OFFER_CREATED);
+        
         Map<String, Long> customersByStatus = customerService.countCustomersByStatusGrouped()
                 .entrySet().stream()
                 .collect(Collectors.toMap(
@@ -332,6 +463,9 @@ public class CustomerController {
                 .activeCustomers(activeCustomers)
                 .inactiveCustomers(inactiveCustomers)
                 .potentialCustomers(potentialCustomers)
+                .wonCustomers(wonCustomers)
+                .lostCustomers(lostCustomers)
+                .customersInPipeline(customersInPipeline)
                 .build();
         
         return ResponseEntity.ok(statistics);

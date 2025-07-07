@@ -23,4 +23,9 @@ public class CustomerStatisticsResponse {
     private Long activeCustomers;
     private Long inactiveCustomers;
     private Long potentialCustomers;
+    
+    // Pipeline-spezifische Statistiken
+    private Long wonCustomers;
+    private Long lostCustomers;
+    private Long customersInPipeline;
 } 

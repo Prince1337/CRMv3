@@ -1,6 +1,8 @@
 package eu.pierix.crmv3.web;
 
 import eu.pierix.crmv3.application.AuthenticationService;
+import eu.pierix.crmv3.application.UserService;
+import eu.pierix.crmv3.domain.User;
 import eu.pierix.crmv3.web.dto.AuthenticationRequest;
 import eu.pierix.crmv3.web.dto.AuthenticationResponse;
 import eu.pierix.crmv3.web.dto.RegisterRequest;
@@ -9,6 +11,7 @@ import eu.pierix.crmv3.web.dto.UserProfileResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,9 +23,11 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*")
+@Slf4j
 public class AuthenticationController {
 
     private final AuthenticationService authenticationService;
+    private final UserService userService;
 
     /**
      * Registriert einen neuen Benutzer
@@ -126,17 +131,34 @@ public class AuthenticationController {
     public ResponseEntity<UserProfileResponse> getProfile(@RequestHeader("Authorization") String authHeader) {
         try {
             if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                log.error("Kein gültiger Authorization-Header");
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
             }
 
             String token = authHeader.substring(7);
             String username = authenticationService.getUsernameFromToken(token);
+            log.info("Authentifizierter Benutzer: {}", username);
             
-            // Hier würden Sie den UserService verwenden, um das Profil zu laden
-            // Für jetzt geben wir ein Beispiel zurück
+            // Benutzer aus der Datenbank laden
+            User user = userService.findByUsername(username)
+                    .orElseThrow(() -> new RuntimeException("Benutzer nicht gefunden"));
+
+            log.info("Benutzerprofil: {}", user);
+            
+            // Vollständiges Profil erstellen
             UserProfileResponse profile = UserProfileResponse.builder()
-                    .username(username)
+                    .userId(user.getId())
+                    .username(user.getUsername())
+                    .email(user.getEmail())
+                    .firstName(user.getFirstName())
+                    .lastName(user.getLastName())
+                    .role("ROLE_" + user.getRole().name()) // Role im korrekten Format für Frontend
+                    .enabled(user.isEnabled())
+                    .createdAt(user.getCreatedAt())
+                    .lastLogin(user.getLastLogin())
                     .build();
+
+            log.info("Benutzerprofil: {}", profile);
             
             return ResponseEntity.ok(profile);
         } catch (Exception e) {

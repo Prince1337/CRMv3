@@ -1,7 +1,31 @@
 export enum CustomerStatus {
   ACTIVE = 'ACTIVE',
   INACTIVE = 'INACTIVE',
-  POTENTIAL = 'POTENTIAL'
+  POTENTIAL = 'POTENTIAL',
+  // Vertriebs-Pipeline Status
+  NEW = 'NEW',
+  CONTACTED = 'CONTACTED',
+  OFFER_CREATED = 'OFFER_CREATED',
+  WON = 'WON',
+  LOST = 'LOST'
+}
+
+export enum CustomerPriority {
+  LOW = 'LOW',
+  MEDIUM = 'MEDIUM',
+  HIGH = 'HIGH',
+  VIP = 'VIP'
+}
+
+export enum LeadSource {
+  WEBSITE = 'WEBSITE',
+  REFERRAL = 'REFERRAL',
+  TRADE_FAIR = 'TRADE_FAIR',
+  SOCIAL_MEDIA = 'SOCIAL_MEDIA',
+  EMAIL_CAMPAIGN = 'EMAIL_CAMPAIGN',
+  COLD_CALL = 'COLD_CALL',
+  PARTNER = 'PARTNER',
+  OTHER = 'OTHER'
 }
 
 export interface Customer {
@@ -24,6 +48,11 @@ export interface Customer {
   fullAddress?: string;
   status: CustomerStatus;
   statusDisplayName: string;
+  priority: CustomerPriority;
+  leadSource: LeadSource;
+  estimatedValue?: number;
+  probability: number; // 0-100%
+  expectedCloseDate?: string;
   source?: string;
   tags?: string;
   notes?: string;
@@ -35,6 +64,8 @@ export interface Customer {
   createdByFullName: string;
   assignedToId?: number;
   assignedToFullName?: string;
+  pipelineEntryDate?: string;
+  daysInPipeline?: number;
 }
 
 export interface CustomerRequest {
@@ -53,6 +84,11 @@ export interface CustomerRequest {
   country?: string;
   website?: string;
   status: CustomerStatus;
+  priority: CustomerPriority;
+  leadSource: LeadSource;
+  estimatedValue?: number;
+  probability?: number;
+  expectedCloseDate?: string;
   source?: string;
   tags?: string;
   notes?: string;
@@ -77,21 +113,22 @@ export interface CustomerSearchRequest {
   sortDirection?: 'asc' | 'desc';
 }
 
-export interface CustomerSearchResponse {
-  content: Customer[];
-  pageable: {
-    pageNumber: number;
-    pageSize: number;
-    sort: {
-      sorted: boolean;
-      direction: string;
-    };
-  };
-  totalElements: number;
-  totalPages: number;
-  last: boolean;
-  first: boolean;
-  numberOfElements: number;
+// Pipeline-spezifische Interfaces
+export interface PipelineCustomers {
+  [status: string]: Customer[];
+}
+
+export interface PipelineStatistics {
+  customersByPipelineStatus: { [key: string]: number };
+  totalInPipeline: number;
+  conversionRate: number;
+  wonCount: number;
+  lostCount: number;
+  totalValue: number;
+  averageDealSize: number;
+  averageDaysInPipeline: number;
+  priorityDistribution: { [key: string]: number };
+  sourceDistribution: { [key: string]: number };
 }
 
 export interface CustomerStatisticsResponse {
@@ -102,4 +139,8 @@ export interface CustomerStatisticsResponse {
   activeCustomers: number;
   inactiveCustomers: number;
   potentialCustomers: number;
+  // Pipeline-spezifische Statistiken
+  customersInPipeline?: number;
+  wonCustomers?: number;
+  lostCustomers?: number;
 } 

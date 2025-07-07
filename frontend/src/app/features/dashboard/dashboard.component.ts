@@ -1,8 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { UserProfile } from '../../core/models/auth.models';
+import { CustomerService } from '../../core/services/customer.service';
+import { CustomerStatisticsResponse } from '../../core/models/customer.models';
 
 @Component({
   selector: 'app-dashboard',
@@ -12,10 +14,12 @@ import { UserProfile } from '../../core/models/auth.models';
     <div class="dashboard-container">
       <header class="dashboard-header">
         <div class="header-content">
-          <h1>CRM v3 Dashboard</h1>
+          <h1>🏢 CRM v3 Dashboard</h1>
           <div class="user-info">
             <span>Willkommen, {{ currentUser?.firstName }} {{ currentUser?.lastName }}</span>
-            <button (click)="logout()" class="logout-button">Abmelden</button>
+            <button (click)="logout()" class="logout-button">
+              🚪 Abmelden
+            </button>
           </div>
         </div>
       </header>
@@ -23,190 +27,167 @@ import { UserProfile } from '../../core/models/auth.models';
       <main class="dashboard-main">
         <div class="welcome-card">
           <h2>Willkommen im CRM v3</h2>
-          <p>Sie sind erfolgreich angemeldet als {{ currentUser?.username }}</p>
-          <p>Rolle: {{ getRoleDisplayName() }}</p>
+          <div class="user-details">
+            <div class="detail-item">
+              <strong>Benutzername:</strong> {{ currentUser?.username || 'Unbekannt' }}
+            </div>
+            <div class="detail-item">
+              <strong>E-Mail:</strong> {{ currentUser?.email || 'Unbekannt' }}
+            </div>
+            <div class="detail-item">
+              <strong>Rolle:</strong> {{ getRoleDisplayName() }}
+            </div>
+            <div class="detail-item">
+              <strong>Status:</strong> 
+              <span class="status-badge" [class]="currentUser?.enabled ? 'status-active' : 'status-inactive'">
+                {{ currentUser?.enabled ? 'Aktiv' : 'Inaktiv' }}
+              </span>
+            </div>
+            <div class="detail-item" *ngIf="currentUser?.createdAt">
+              <strong>Registriert:</strong> {{ formatDate(currentUser?.createdAt) }}
+            </div>
+            <div class="detail-item" *ngIf="currentUser?.lastLogin">
+              <strong>Letzter Login:</strong> {{ formatDate(currentUser?.lastLogin) }}
+            </div>
+          </div>
         </div>
 
         <div class="quick-actions">
-          <h3>Schnellzugriff</h3>
+          <h3>🚀 Schnellzugriff</h3>
           <div class="action-buttons">
-            <button (click)="navigateToCustomers()" class="action-button">
-              Kunden verwalten
+            <button (click)="navigateToCustomers()" class="action-button primary">
+              👥 Kunden verwalten
             </button>
-            <button *ngIf="isAdmin()" (click)="navigateToStatistics()" class="action-button">
-              Statistiken
+            <button (click)="navigateToPipeline()" class="action-button secondary">
+              📈 Pipeline
             </button>
+            <button *ngIf="isAdmin()" (click)="navigateToStatistics()" class="action-button admin">
+              📊 Statistiken
+            </button>
+          </div>
+        </div>
+
+        <div class="stats-overview" *ngIf="isAdmin()">
+          <div class="stats-header">
+            <h3>📈 Übersicht</h3>
+            <button (click)="refreshStats()" class="refresh-button" title="Statistiken aktualisieren">
+              🔄
+            </button>
+          </div>
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-icon">👥</div>
+              <div class="stat-content">
+                <div class="stat-value">{{ customerStats.total || 0 }}</div>
+                <div class="stat-label">Gesamt Kunden</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon">📈</div>
+              <div class="stat-content">
+                <div class="stat-value">{{ customerStats.inPipeline || 0 }}</div>
+                <div class="stat-label">In Pipeline</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon">✅</div>
+              <div class="stat-content">
+                <div class="stat-value">{{ customerStats.won || 0 }}</div>
+                <div class="stat-label">Gewonnen</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon">❌</div>
+              <div class="stat-content">
+                <div class="stat-value">{{ customerStats.lost || 0 }}</div>
+                <div class="stat-label">Verloren</div>
+              </div>
+            </div>
           </div>
         </div>
       </main>
     </div>
   `,
-  styles: [`
-    .dashboard-container {
-      min-height: 100vh;
-      background: #f8fafc;
-    }
-
-    .dashboard-header {
-      background: white;
-      border-bottom: 1px solid #e2e8f0;
-      padding: 1rem 0;
-    }
-
-    .header-content {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 0 2rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .header-content h1 {
-      margin: 0;
-      color: #1e293b;
-      font-size: 1.5rem;
-      font-weight: 600;
-    }
-
-    .user-info {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-    }
-
-    .user-info span {
-      color: #64748b;
-      font-size: 0.875rem;
-    }
-
-    .logout-button {
-      background: #ef4444;
-      color: white;
-      border: none;
-      padding: 0.5rem 1rem;
-      border-radius: 0.375rem;
-      font-size: 0.875rem;
-      cursor: pointer;
-      transition: background-color 0.2s;
-    }
-
-    .logout-button:hover {
-      background: #dc2626;
-    }
-
-    .dashboard-main {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 2rem;
-    }
-
-    .welcome-card {
-      background: white;
-      border-radius: 0.5rem;
-      padding: 2rem;
-      margin-bottom: 2rem;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    }
-
-    .welcome-card h2 {
-      margin: 0 0 1rem 0;
-      color: #1e293b;
-      font-size: 1.25rem;
-      font-weight: 600;
-    }
-
-    .welcome-card p {
-      margin: 0.5rem 0;
-      color: #64748b;
-    }
-
-    .quick-actions {
-      background: white;
-      border-radius: 0.5rem;
-      padding: 2rem;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    }
-
-    .quick-actions h3 {
-      margin: 0 0 1rem 0;
-      color: #1e293b;
-      font-size: 1.125rem;
-      font-weight: 600;
-    }
-
-    .action-buttons {
-      display: flex;
-      gap: 1rem;
-      flex-wrap: wrap;
-    }
-
-    .action-button {
-      background: #3b82f6;
-      color: white;
-      border: none;
-      padding: 0.75rem 1.5rem;
-      border-radius: 0.375rem;
-      font-size: 0.875rem;
-      cursor: pointer;
-      transition: background-color 0.2s;
-    }
-
-    .action-button:hover {
-      background: #2563eb;
-    }
-
-    @media (max-width: 768px) {
-      .header-content {
-        flex-direction: column;
-        gap: 1rem;
-        text-align: center;
-      }
-
-      .user-info {
-        flex-direction: column;
-        gap: 0.5rem;
-      }
-
-      .dashboard-main {
-        padding: 1rem;
-      }
-
-      .action-buttons {
-        flex-direction: column;
-      }
-    }
-  `]
+  styleUrls: ['./dashboard.component.scss']
 })
-export class DashboardComponent implements OnInit {
+export class DashboardComponent implements OnInit, OnDestroy {
   currentUser: UserProfile | null = null;
+  customerStats: any = {};
+  private authSubscription: any;
 
   constructor(
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private customerService: CustomerService
   ) {}
 
   ngOnInit(): void {
+    // User-Informationen vom AuthService beobachten
+    this.authSubscription = this.authService.authState$.subscribe(authState => {
+      this.currentUser = authState.user;
+    });
+    
+    // Initial User laden
     this.currentUser = this.authService.getCurrentUser();
+    
+    // User-Profile explizit laden falls nicht vorhanden
+    if (!this.currentUser && this.authService.isAuthenticated()) {
+      this.authService.getUserProfile().subscribe({
+        next: (user) => {
+          this.currentUser = user;
+          console.log('User-Profile explizit geladen:', user);
+        },
+        error: (error) => {
+          console.error('Fehler beim Laden des User-Profils:', error);
+        }
+      });
+    }
+    
+    this.loadCustomerStats();
+  }
+
+  ngOnDestroy(): void {
+    if (this.authSubscription) {
+      this.authSubscription.unsubscribe();
+    }
   }
 
   logout(): void {
-    this.authService.logout().subscribe({
-      next: () => {
-        this.router.navigate(['/login']);
-      },
-      error: (error) => {
-        console.error('Logout error:', error);
-        this.router.navigate(['/login']);
-      }
-    });
+    console.log('Logout wird ausgeführt...');
+    
+    // Sofort lokalen Logout durchführen
+    this.authService.handleLogout();
+    
+    // Backend-Logout versuchen (optional, nicht blockierend)
+    try {
+      this.authService.logout().subscribe({
+        next: (response) => {
+          console.log('Backend-Logout erfolgreich:', response);
+        },
+        error: (error) => {
+          console.error('Backend-Logout error:', error);
+          // Fehler ist nicht kritisch, lokaler Logout wurde bereits durchgeführt
+        }
+      });
+    } catch (error) {
+      console.error('Fehler beim Backend-Logout:', error);
+    }
+    
+    // Zur Login-Seite navigieren
+    this.router.navigate(['/login']);
   }
 
   getRoleDisplayName(): string {
-    if (this.authService.isAdmin()) {
-      return 'Administrator';
+    if (!this.currentUser?.role) return 'Unbekannt';
+    
+    switch (this.currentUser.role) {
+      case 'ROLE_ADMIN':
+        return 'Administrator';
+      case 'ROLE_USER':
+        return 'Benutzer';
+      default:
+        return this.currentUser.role;
     }
-    return 'Benutzer';
   }
 
   isAdmin(): boolean {
@@ -217,7 +198,58 @@ export class DashboardComponent implements OnInit {
     this.router.navigate(['/customers']);
   }
 
+  navigateToPipeline(): void {
+    this.router.navigate(['/customers/pipeline']);
+  }
+
   navigateToStatistics(): void {
     this.router.navigate(['/statistics']);
+  }
+
+  formatDate(dateString: string | undefined): string {
+    if (!dateString) return 'Unbekannt';
+    
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('de-DE', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch (error) {
+      return 'Ungültiges Datum';
+    }
+  }
+
+  private loadCustomerStats(): void {
+    // Statistiken vom Backend laden
+    this.customerService.getCustomerStatistics().subscribe({
+      next: (stats: CustomerStatisticsResponse) => {
+        this.customerStats = {
+          total: stats.totalCustomers || 0,
+          inPipeline: stats.customersInPipeline || 0,
+          won: stats.wonCustomers || 0,
+          lost: stats.lostCustomers || 0
+        };
+        console.log('Dashboard-Statistiken geladen:', this.customerStats);
+      },
+      error: (error) => {
+        console.error('Fehler beim Laden der Kunden-Statistiken:', error);
+        // Fallback zu Platzhalter-Daten bei Fehler
+        this.customerStats = {
+          total: 0,
+          inPipeline: 0,
+          won: 0,
+          lost: 0
+        };
+      }
+    });
+  }
+
+  // Öffentliche Methode zum Aktualisieren der Statistiken
+  refreshStats(): void {
+    this.loadCustomerStats();
   }
 } 

@@ -1,6 +1,5 @@
 package eu.pierix.crmv3.web.dto;
 
-import eu.pierix.crmv3.domain.Role;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -22,7 +21,7 @@ public class UserProfileResponse {
     private String email;
     private String firstName;
     private String lastName;
-    private Role role;
+    private String role; // Role als String für Frontend-Kompatibilität
     private boolean enabled;
     private LocalDateTime createdAt;
     private LocalDateTime lastLogin;

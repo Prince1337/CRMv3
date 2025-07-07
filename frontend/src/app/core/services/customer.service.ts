@@ -5,9 +5,12 @@ import {
   Customer, 
   CustomerRequest, 
   CustomerSearchRequest, 
-  CustomerSearchResponse, 
   CustomerStatisticsResponse,
-  CustomerStatus 
+  CustomerStatus,
+  CustomerPriority,
+  LeadSource,
+  PipelineCustomers,
+  PipelineStatistics
 } from '../models/customer.models';
 
 @Injectable({
@@ -19,14 +22,11 @@ export class CustomerService {
   constructor(private http: HttpClient) {}
 
   // CRUD Operationen
-  getCustomers(page = 0, size = 20, sortBy = 'createdAt', sortDirection: 'asc' | 'desc' = 'desc'): Observable<CustomerSearchResponse> {
+  getCustomers(page: number = 0, size: number = 20): Observable<any> {
     const params = new HttpParams()
       .set('page', page.toString())
-      .set('size', size.toString())
-      .set('sortBy', sortBy)
-      .set('sortDirection', sortDirection);
-
-    return this.http.get<CustomerSearchResponse>(this.API_URL, { params });
+      .set('size', size.toString());
+    return this.http.get<any>(this.API_URL, { params });
   }
 
   getCustomer(id: number): Observable<Customer> {
@@ -46,8 +46,8 @@ export class CustomerService {
   }
 
   // Erweiterte Suche
-  searchCustomers(searchRequest: CustomerSearchRequest): Observable<CustomerSearchResponse> {
-    return this.http.post<CustomerSearchResponse>(`${this.API_URL}/search`, searchRequest);
+  searchCustomers(searchRequest: CustomerSearchRequest): Observable<any> {
+    return this.http.post<any>(`${this.API_URL}/search`, searchRequest);
   }
 
   // Status-basierte Filter
@@ -70,6 +70,27 @@ export class CustomerService {
     return this.http.patch<Customer>(`${this.API_URL}/${id}/assign?userId=${userId}`, {});
   }
 
+  // Pipeline-spezifische Methoden
+  getPipelineCustomers(): Observable<PipelineCustomers> {
+    return this.http.get<PipelineCustomers>(`${this.API_URL}/pipeline`);
+  }
+
+  getPipelineCustomersByStatus(status: CustomerStatus): Observable<Customer[]> {
+    return this.http.get<Customer[]>(`${this.API_URL}/pipeline/${status}`);
+  }
+
+  changePipelineStatus(id: number, newStatus: CustomerStatus): Observable<Customer> {
+    return this.http.patch<Customer>(`${this.API_URL}/${id}/pipeline-status?newStatus=${newStatus}`, {});
+  }
+
+  moveToNextPipelineStep(id: number): Observable<Customer> {
+    return this.http.patch<Customer>(`${this.API_URL}/${id}/next-pipeline-step`, {});
+  }
+
+  getPipelineStatistics(): Observable<PipelineStatistics> {
+    return this.http.get<PipelineStatistics>(`${this.API_URL}/pipeline/statistics`);
+  }
+
   // Statistiken (nur Admin)
   getCustomerStatistics(): Observable<CustomerStatisticsResponse> {
     return this.http.get<CustomerStatisticsResponse>(`${this.API_URL}/statistics`);
@@ -81,7 +102,66 @@ export class CustomerService {
       case CustomerStatus.ACTIVE: return 'Aktiv';
       case CustomerStatus.INACTIVE: return 'Inaktiv';
       case CustomerStatus.POTENTIAL: return 'Potenziell';
+      case CustomerStatus.NEW: return 'Neu';
+      case CustomerStatus.CONTACTED: return 'Kontaktiert';
+      case CustomerStatus.OFFER_CREATED: return 'Angebot erstellt';
+      case CustomerStatus.WON: return 'Gewonnen';
+      case CustomerStatus.LOST: return 'Verloren';
       default: return status;
+    }
+  }
+
+  getPriorityDisplayName(priority: CustomerPriority): string {
+    switch (priority) {
+      case CustomerPriority.LOW: return 'Niedrig';
+      case CustomerPriority.MEDIUM: return 'Mittel';
+      case CustomerPriority.HIGH: return 'Hoch';
+      case CustomerPriority.VIP: return 'VIP';
+      default: return priority;
+    }
+  }
+
+  getLeadSourceDisplayName(source: LeadSource): string {
+    switch (source) {
+      case LeadSource.WEBSITE: return 'Website';
+      case LeadSource.REFERRAL: return 'Empfehlung';
+      case LeadSource.TRADE_FAIR: return 'Messe';
+      case LeadSource.SOCIAL_MEDIA: return 'Social Media';
+      case LeadSource.EMAIL_CAMPAIGN: return 'E-Mail Kampagne';
+      case LeadSource.COLD_CALL: return 'Kaltakquise';
+      case LeadSource.PARTNER: return 'Partner';
+      case LeadSource.OTHER: return 'Sonstiges';
+      default: return source;
+    }
+  }
+
+  getPriorityClass(priority: CustomerPriority): string {
+    switch (priority) {
+      case CustomerPriority.LOW: return 'priority-low';
+      case CustomerPriority.MEDIUM: return 'priority-medium';
+      case CustomerPriority.HIGH: return 'priority-high';
+      case CustomerPriority.VIP: return 'priority-vip';
+      default: return 'priority-medium';
+    }
+  }
+
+  calculateProbability(status: CustomerStatus): number {
+    switch (status) {
+      case CustomerStatus.NEW: return 10;
+      case CustomerStatus.CONTACTED: return 25;
+      case CustomerStatus.OFFER_CREATED: return 60;
+      case CustomerStatus.WON: return 100;
+      case CustomerStatus.LOST: return 0;
+      default: return 0;
+    }
+  }
+
+  getNextPipelineStep(currentStatus: CustomerStatus): CustomerStatus | null {
+    switch (currentStatus) {
+      case CustomerStatus.NEW: return CustomerStatus.CONTACTED;
+      case CustomerStatus.CONTACTED: return CustomerStatus.OFFER_CREATED;
+      case CustomerStatus.OFFER_CREATED: return CustomerStatus.WON;
+      default: return null;
     }
   }
 
@@ -90,7 +170,37 @@ export class CustomerService {
       case CustomerStatus.ACTIVE: return 'badge-success';
       case CustomerStatus.INACTIVE: return 'badge-secondary';
       case CustomerStatus.POTENTIAL: return 'badge-warning';
+      case CustomerStatus.NEW: return 'badge-info';
+      case CustomerStatus.CONTACTED: return 'badge-primary';
+      case CustomerStatus.OFFER_CREATED: return 'badge-warning';
+      case CustomerStatus.WON: return 'badge-success';
+      case CustomerStatus.LOST: return 'badge-danger';
       default: return 'badge-secondary';
+    }
+  }
+
+  isPipelineStatus(status: CustomerStatus): boolean {
+    return status === CustomerStatus.NEW || 
+           status === CustomerStatus.CONTACTED || 
+           status === CustomerStatus.OFFER_CREATED || 
+           status === CustomerStatus.WON || 
+           status === CustomerStatus.LOST;
+  }
+
+  getNextPossibleStatuses(status: CustomerStatus): CustomerStatus[] {
+    switch (status) {
+      case CustomerStatus.NEW:
+        return [CustomerStatus.CONTACTED, CustomerStatus.LOST];
+      case CustomerStatus.CONTACTED:
+        return [CustomerStatus.OFFER_CREATED, CustomerStatus.LOST];
+      case CustomerStatus.OFFER_CREATED:
+        return [CustomerStatus.WON, CustomerStatus.LOST];
+      case CustomerStatus.WON:
+        return [CustomerStatus.ACTIVE];
+      case CustomerStatus.LOST:
+        return [CustomerStatus.POTENTIAL];
+      default:
+        return [];
     }
   }
 

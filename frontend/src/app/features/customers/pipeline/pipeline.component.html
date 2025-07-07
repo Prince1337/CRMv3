@@ -1,0 +1,168 @@
+<div class="pipeline-container">
+  <!-- Header mit Statistiken -->
+  <div class="pipeline-header">
+    <h1>🎯 Vertriebs-Pipeline</h1>
+    
+    <div class="pipeline-stats" *ngIf="statistics">
+      <div class="stat-card">
+        <div class="stat-value">{{ getTotalInPipeline() }}</div>
+        <div class="stat-label">In Pipeline</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">{{ getConversionRate() }}%</div>
+        <div class="stat-label">Conversion Rate</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">{{ statistics.wonCount }}</div>
+        <div class="stat-label">Gewonnen</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">{{ statistics.lostCount }}</div>
+        <div class="stat-label">Verloren</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-container" *ngIf="loading">
+    <div class="loading-spinner"></div>
+    <p>Lade Pipeline-Daten...</p>
+  </div>
+
+  <!-- Error State -->
+  <div class="error-container" *ngIf="error">
+    <div class="alert alert-danger">
+      <strong>⚠️ Fehler:</strong> {{ error }}
+      <button class="btn btn-sm btn-outline-danger ms-2" (click)="loadPipelineData()">
+        🔄 Erneut versuchen
+      </button>
+    </div>
+  </div>
+
+  <!-- Pipeline Board -->
+  <div class="pipeline-board" *ngIf="!loading && !error">
+    <div class="pipeline-column" *ngFor="let status of pipelineStatuses">
+      <div class="column-header">
+        <h3>{{ getStatusIcon(status) }} {{ getStatusDisplayName(status) }}</h3>
+        <span class="badge">
+          {{ getCustomerCount(status) }}
+        </span>
+      </div>
+
+      <div class="column-content">
+        <div class="customer-card" *ngFor="let customer of getCustomersForStatus(status)">
+          <div class="card-header">
+            <h4>{{ customer.fullName }}</h4>
+            <div class="card-actions">
+              <button class="btn btn-sm btn-outline-primary" (click)="viewCustomer(customer)" title="Kunde anzeigen">
+                👁️
+              </button>
+              <button class="btn btn-sm btn-outline-secondary" (click)="editCustomer(customer)" title="Kunde bearbeiten">
+                ✏️
+              </button>
+            </div>
+          </div>
+
+          <div class="card-body">
+            <div class="customer-info">
+              <p *ngIf="customer.companyName"><strong>🏢 Firma:</strong> {{ customer.companyName }}</p>
+              <p *ngIf="customer.email"><strong>📧 Email:</strong> {{ customer.email }}</p>
+              <p *ngIf="customer.phone"><strong>📞 Telefon:</strong> {{ customer.phone }}</p>
+              <p *ngIf="customer.city"><strong>📍 Stadt:</strong> {{ customer.city }}</p>
+              <p *ngIf="customer.source"><strong>🔗 Quelle:</strong> {{ customer.source }}</p>
+              <p><strong>📅 Erstellt:</strong> {{ formatDate(customer.createdAt) }} ({{ getCustomerAge(customer) }})</p>
+              
+              <!-- Pipeline-spezifische Informationen -->
+              <div class="pipeline-info" *ngIf="customer.priority || customer.estimatedValue || customer.probability">
+                <div class="priority-badge" [ngClass]="getPriorityClass(customer.priority)" *ngIf="customer.priority">
+                  {{ getPriorityDisplayName(customer.priority) }}
+                </div>
+                <div class="value-info" *ngIf="customer.estimatedValue">
+                  <strong>💰 Wert:</strong> {{ customer.estimatedValue | currency:'EUR' }}
+                </div>
+                <div class="probability-info" *ngIf="customer.probability">
+                  <strong>📊 Wahrscheinlichkeit:</strong> {{ customer.probability }}%
+                </div>
+                <div class="days-info" *ngIf="customer.daysInPipeline">
+                  <strong>⏱️ In Pipeline:</strong> {{ customer.daysInPipeline }} Tage
+                </div>
+              </div>
+            </div>
+
+            <div class="customer-notes" *ngIf="customer.notes">
+              <strong>📝 Notizen:</strong>
+              <p>{{ customer.notes }}</p>
+            </div>
+
+            <div class="status-actions">
+              <!-- Nächster Schritt Button -->
+              <button 
+                class="btn btn-sm btn-success" 
+                (click)="moveToNextStep(customer)"
+                *ngIf="getNextPossibleStatuses(status).length > 0"
+                title="Zum nächsten Schritt">
+                ➡️ Nächster Schritt
+              </button>
+
+              <!-- Status ändern Button -->
+              <button 
+                class="btn btn-sm btn-outline-primary" 
+                (click)="openStatusModal(customer)"
+                *ngIf="getNextPossibleStatuses(status).length > 1"
+                title="Status ändern">
+                🔄 Status ändern
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Empty State -->
+        <div class="empty-state" *ngIf="getCustomerCount(status) === 0">
+          <p>Keine Kunden in diesem Status</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Status Change Modal -->
+  <div class="modal-overlay" *ngIf="showStatusModal" (click)="closeStatusModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>📊 Status ändern</h3>
+        <button class="modal-close" (click)="closeStatusModal()">✕</button>
+      </div>
+      
+      <div class="modal-body" *ngIf="selectedCustomer">
+        <div class="customer-summary">
+          <h4>{{ selectedCustomer.fullName }}</h4>
+          <p *ngIf="selectedCustomer.companyName">🏢 {{ selectedCustomer.companyName }}</p>
+          <p><strong>Aktueller Status:</strong> {{ getStatusIcon(selectedCustomer.status) }} {{ getStatusDisplayName(selectedCustomer.status) }}</p>
+        </div>
+        
+        <div class="status-options">
+          <h5>Neuen Status wählen:</h5>
+          <div class="status-grid">
+            <button 
+              class="status-option" 
+              *ngFor="let status of getNextPossibleStatuses(selectedCustomer.status)"
+              [class.selected]="selectedNewStatus === status"
+              (click)="selectStatus(status)">
+              <div class="status-icon">{{ getStatusIcon(status) }}</div>
+              <div class="status-name">{{ getStatusDisplayName(status) }}</div>
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeStatusModal()">Abbrechen</button>
+        <button 
+          class="btn btn-primary" 
+          [disabled]="!selectedNewStatus"
+          (click)="confirmStatusChange()">
+          Status ändern
+        </button>
+      </div>
+    </div>
+  </div>
+</div> 

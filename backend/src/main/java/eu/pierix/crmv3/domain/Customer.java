@@ -79,7 +79,30 @@ public class Customer {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @Builder.Default
-    private CustomerStatus status = CustomerStatus.POTENTIAL;
+    private CustomerStatus status = CustomerStatus.NEW; // Standard: NEW für Pipeline
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Builder.Default
+    private CustomerPriority priority = CustomerPriority.MEDIUM;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Builder.Default
+    private LeadSource leadSource = LeadSource.WEBSITE;
+
+    @Column(name = "estimated_value")
+    private Double estimatedValue;
+
+    @Column(name = "probability")
+    @Builder.Default
+    private Integer probability = 25; // Standard-Wahrscheinlichkeit für NEW
+
+    @Column(name = "expected_close_date")
+    private LocalDateTime expectedCloseDate;
+
+    @Column(name = "pipeline_entry_date")
+    private LocalDateTime pipelineEntryDate;
 
     @Column(name = "source")
     private String source; // Woher kommt der Kunde (Website, Empfehlung, etc.)
@@ -118,6 +141,11 @@ public class Customer {
     protected void onCreate() {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
+        
+        // Wenn Status NEW ist, setze Pipeline-Eintrittsdatum
+        if (status == CustomerStatus.NEW && pipelineEntryDate == null) {
+            pipelineEntryDate = LocalDateTime.now();
+        }
     }
 
     @PreUpdate

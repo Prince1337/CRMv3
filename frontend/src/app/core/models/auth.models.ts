@@ -25,12 +25,15 @@ export interface RegisterResponse {
 }
 
 export interface UserProfile {
-  id: number;
+  userId: number;
   username: string;
   email: string;
   firstName: string;
   lastName: string;
-  roles: string[];
+  role: string;
+  enabled: boolean;
+  createdAt: string;
+  lastLogin?: string;
 }
 
 export interface AuthState {

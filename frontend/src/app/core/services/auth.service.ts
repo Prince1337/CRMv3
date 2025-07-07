@@ -36,20 +36,54 @@ export class AuthService {
     private router: Router
   ) {
     this.initializeAuthState();
+    
+    // Beim Start User-Profile laden wenn bereits authentifiziert
+    if (this.isAuthenticated()) {
+      this.getUserProfile().subscribe({
+        next: (user) => {
+          this.updateUserProfile(user);
+        },
+        error: (error) => {
+          console.error('Fehler beim Laden des User-Profils beim Start:', error);
+        }
+      });
+    }
   }
 
   private initializeAuthState(): void {
     const accessToken = localStorage.getItem(this.TOKEN_KEY);
     const refreshToken = localStorage.getItem(this.REFRESH_TOKEN_KEY);
-    const userStr = localStorage.getItem(this.USER_KEY);
 
     if (accessToken && refreshToken) {
-      const user = userStr ? JSON.parse(userStr) : null;
-      this.authStateSubject.next({
-        isAuthenticated: true,
-        user,
-        accessToken,
-        refreshToken
+      // User-Profile vom Backend laden
+      this.getUserProfile().subscribe({
+        next: (user) => {
+          localStorage.setItem(this.USER_KEY, JSON.stringify(user));
+          this.authStateSubject.next({
+            isAuthenticated: true,
+            user,
+            accessToken,
+            refreshToken
+          });
+        },
+        error: (error) => {
+          console.error('Fehler beim Laden des User-Profils beim Start:', error);
+          // Fallback: Gespeicherte User-Daten verwenden
+          const userStr = localStorage.getItem(this.USER_KEY);
+          const user = userStr ? JSON.parse(userStr) : null;
+          
+          if (user) {
+            this.authStateSubject.next({
+              isAuthenticated: true,
+              user,
+              accessToken,
+              refreshToken
+            });
+          } else {
+            // Keine User-Daten verfügbar, Logout durchführen
+            this.handleLogout();
+          }
+        }
       });
     }
   }
@@ -70,10 +104,22 @@ export class AuthService {
   }
 
   logout(): Observable<string> {
-    return this.http.post<string>(`${this.API_URL}/auth/logout`, {})
+    const token = this.getAccessToken();
+    const headers: { [key: string]: string } = {};
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    
+    return this.http.post<string>(`${this.API_URL}/auth/logout`, {}, { headers })
       .pipe(
         tap(() => this.handleLogout()),
-        catchError(this.handleError)
+        catchError(error => {
+          // Auch bei Fehler lokalen Logout durchführen
+          console.error('Logout-Request fehlgeschlagen:', error);
+          this.handleLogout();
+          return throwError(() => error);
+        })
       );
   }
 
@@ -96,7 +142,14 @@ export class AuthService {
   }
 
   getUserProfile(): Observable<UserProfile> {
-    return this.http.get<UserProfile>(`${this.API_URL}/auth/profile`)
+    const token = this.getAccessToken();
+    const headers: { [key: string]: string } = {};
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    
+    return this.http.get<UserProfile>(`${this.API_URL}/auth/profile`, { headers })
       .pipe(
         tap(user => this.updateUserProfile(user)),
         catchError(this.handleError)
@@ -107,20 +160,35 @@ export class AuthService {
     localStorage.setItem(this.TOKEN_KEY, response.accessToken);
     localStorage.setItem(this.REFRESH_TOKEN_KEY, response.refreshToken);
 
-    // Token dekodieren um Benutzerinformationen zu extrahieren
-    const user = this.decodeToken(response.accessToken);
-    
-    localStorage.setItem(this.USER_KEY, JSON.stringify(user));
-
-    this.authStateSubject.next({
-      isAuthenticated: true,
-      user,
-      accessToken: response.accessToken,
-      refreshToken: response.refreshToken
+    // User-Profile vom Backend laden
+    this.getUserProfile().subscribe({
+      next: (user) => {
+        localStorage.setItem(this.USER_KEY, JSON.stringify(user));
+        
+        this.authStateSubject.next({
+          isAuthenticated: true,
+          user,
+          accessToken: response.accessToken,
+          refreshToken: response.refreshToken
+        });
+      },
+      error: (error) => {
+        console.error('Fehler beim Laden des User-Profils:', error);
+        // Fallback: Token dekodieren
+        const user = this.decodeToken(response.accessToken);
+        localStorage.setItem(this.USER_KEY, JSON.stringify(user));
+        
+        this.authStateSubject.next({
+          isAuthenticated: true,
+          user,
+          accessToken: response.accessToken,
+          refreshToken: response.refreshToken
+        });
+      }
     });
   }
 
-  private handleLogout(): void {
+  public handleLogout(): void {
     localStorage.removeItem(this.TOKEN_KEY);
     localStorage.removeItem(this.REFRESH_TOKEN_KEY);
     localStorage.removeItem(this.USER_KEY);
@@ -149,22 +217,28 @@ export class AuthService {
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
       return {
-        id: payload.sub,
+        userId: payload.sub,
         username: payload.username,
         email: payload.email,
         firstName: payload.firstName,
         lastName: payload.lastName,
-        roles: payload.roles || []
+        role: payload.role || 'USER',
+        enabled: payload.enabled !== false,
+        createdAt: payload.createdAt || new Date().toISOString(),
+        lastLogin: payload.lastLogin
       };
     } catch (error) {
       console.error('Fehler beim Dekodieren des Tokens:', error);
       return {
-        id: 0,
+        userId: 0,
         username: '',
         email: '',
         firstName: '',
         lastName: '',
-        roles: []
+        role: 'USER',
+        enabled: true,
+        createdAt: new Date().toISOString(),
+        lastLogin: undefined
       };
     }
   }
@@ -208,7 +282,7 @@ export class AuthService {
 
   hasRole(role: string): boolean {
     const user = this.authStateSubject.value.user;
-    return user?.roles.includes(role) || false;
+    return user?.role === role || false;
   }
 
   isAdmin(): boolean {

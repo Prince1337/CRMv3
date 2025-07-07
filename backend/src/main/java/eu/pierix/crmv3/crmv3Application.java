@@ -64,7 +64,7 @@ public class crmv3Application {
 				createSampleCustomer("Thomas", "Weber", "thomas.weber@startup.de", 
 					"+49 555 123456", "StartupXYZ", "CEO", 
 					"Management", "Gründerweg", "789", "10115", "Hamburg", "Deutschland",
-					"https://www.startupxyz.de", CustomerStatus.POTENTIAL, "LinkedIn", "Startup, Growth",
+					"https://www.startupxyz.de", CustomerStatus.NEW, "LinkedIn", "Startup, Growth",
 					"Junges Startup mit großem Potenzial.", 
 					"Intern: Wachsende Firma, Budget begrenzt", LocalDateTime.now().minusDays(10)),
 
@@ -85,7 +85,7 @@ public class crmv3Application {
 				createSampleCustomer("Lisa", "Fischer", "lisa.fischer@design.de", 
 					"+49 777 888999", "Fischer Design Studio", "Creative Director", 
 					"Design", "Kreativweg", "987", "40213", "Düsseldorf", "Deutschland",
-					"https://www.fischer-design.de", CustomerStatus.POTENTIAL, "Instagram", "Design, Creative",
+					"https://www.fischer-design.de", CustomerStatus.CONTACTED, "Instagram", "Design, Creative",
 					"Kreatives Design-Studio mit modernem Ansatz.", 
 					"Intern: Visuell orientiert, offen für Innovation", LocalDateTime.now().minusDays(7)),
 
@@ -99,7 +99,7 @@ public class crmv3Application {
 				createSampleCustomer("Sarah", "Becker", "sarah.becker@health.de", 
 					"+49 666 777888", "Becker Health Solutions", "Geschäftsführerin", 
 					"Gesundheit", "Gesundheitsweg", "258", "70174", "Stuttgart", "Deutschland",
-					"https://www.becker-health.de", CustomerStatus.POTENTIAL, "Website", "Health, Medical",
+					"https://www.becker-health.de", CustomerStatus.OFFER_CREATED, "Website", "Health, Medical",
 					"Gesundheitsdienstleister mit Fokus auf Digitalisierung.", 
 					"Intern: Regulierte Branche, vorsichtig bei Änderungen", LocalDateTime.now().minusDays(15)),
 
@@ -113,9 +113,16 @@ public class crmv3Application {
 				createSampleCustomer("Julia", "Hoffmann", "julia.hoffmann@education.de", 
 					"+49 222 333444", "Hoffmann Education", "Direktorin", 
 					"Bildung", "Bildungsweg", "741", "90402", "Nürnberg", "Deutschland",
-					"https://www.hoffmann-education.de", CustomerStatus.POTENTIAL, "LinkedIn", "Education, Training",
+					"https://www.hoffmann-education.de", CustomerStatus.WON, "LinkedIn", "Education, Training",
 					"Bildungseinrichtung mit Fokus auf digitale Lernmethoden.", 
-					"Intern: Öffentlicher Sektor, langsame Entscheidungsprozesse", LocalDateTime.now().minusDays(20))
+					"Intern: Öffentlicher Sektor, langsame Entscheidungsprozesse", LocalDateTime.now().minusDays(20)),
+
+				createSampleCustomer("Frank", "Meyer", "frank.meyer@oldtech.de", 
+					"+49 888 999000", "OldTech Systems", "Geschäftsführer", 
+					"IT", "Altstraße", "555", "50667", "Köln", "Deutschland",
+					"https://www.oldtech.de", CustomerStatus.LOST, "Telefon", "Legacy, SME",
+					"Traditionelles IT-Unternehmen, nicht bereit für moderne Lösungen.", 
+					"Intern: Technisch veraltet, Budget zu gering", LocalDateTime.now().minusDays(25))
 			);
 
 			// Alle Sample-Customers speichern

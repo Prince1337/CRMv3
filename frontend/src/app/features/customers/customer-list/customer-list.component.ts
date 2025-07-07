@@ -15,9 +15,14 @@ import { AuthService } from '../../../core/services/auth.service';
       <header class="customer-header">
         <div class="header-content">
           <h1>Kundenverwaltung</h1>
-          <button (click)="navigateToNewCustomer()" class="btn-primary">
-            <span>+</span> Neuer Kunde
-          </button>
+          <div class="header-actions">
+            <button (click)="navigateToPipeline()" class="btn-secondary">
+              📊 Pipeline
+            </button>
+            <button (click)="navigateToNewCustomer()" class="btn-primary">
+              <span>+</span> Neuer Kunde
+            </button>
+          </div>
         </div>
       </header>
 
@@ -71,9 +76,14 @@ import { AuthService } from '../../../core/services/auth.service';
               <label for="searchStatus">Status</label>
               <select id="searchStatus" [(ngModel)]="searchRequest.status">
                 <option value="">Alle Status</option>
+                <option [value]="CustomerStatus.NEW">Neu</option>
+                <option [value]="CustomerStatus.CONTACTED">Kontaktiert</option>
+                <option [value]="CustomerStatus.OFFER_CREATED">Angebot erstellt</option>
+                <option [value]="CustomerStatus.WON">Gewonnen</option>
+                <option [value]="CustomerStatus.LOST">Verloren</option>
+                <option [value]="CustomerStatus.POTENTIAL">Potenziell</option>
                 <option [value]="CustomerStatus.ACTIVE">Aktiv</option>
                 <option [value]="CustomerStatus.INACTIVE">Inaktiv</option>
-                <option [value]="CustomerStatus.POTENTIAL">Potenziell</option>
               </select>
             </div>
             <div class="search-field">
@@ -408,6 +418,10 @@ export class CustomerListComponent implements OnInit {
 
   navigateToNewCustomer(): void {
     this.router.navigate(['/customers', 'new']);
+  }
+
+  navigateToPipeline(): void {
+    this.router.navigate(['/customers/pipeline']);
   }
 
   markAsContacted(id: number): void {

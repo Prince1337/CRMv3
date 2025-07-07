@@ -34,7 +34,9 @@ export class LoginComponent {
 
       this.authService.login(this.loginForm.value).subscribe({
         next: () => {
-          this.router.navigate(['/dashboard']);
+          console.log('Login erfolgreich, Weiterleitung wird von AppComponent übernommen');
+          this.isLoading = false;
+          // Navigation wird von AppComponent übernommen
         },
         error: (error) => {
           this.errorMessage = error.message;

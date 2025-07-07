@@ -23,6 +23,11 @@ export const routes: Routes = [
     canActivate: [AuthGuard]
   },
   { 
+    path: 'customers/pipeline', 
+    loadComponent: () => import('./features/customers/pipeline/pipeline.component').then(m => m.PipelineComponent),
+    canActivate: [AuthGuard]
+  },
+  { 
     path: 'customers/:id', 
     loadComponent: () => import('./features/customers/customer-detail/customer-detail.component').then(m => m.CustomerDetailComponent),
     canActivate: [AuthGuard]

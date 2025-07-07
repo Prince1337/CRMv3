@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { Customer, CustomerRequest, CustomerStatus } from '../../../core/models/customer.models';
+import { Customer, CustomerRequest, CustomerStatus, CustomerPriority, LeadSource } from '../../../core/models/customer.models';
 import { CustomerService } from '../../../core/services/customer.service';
 
 @Component({
@@ -214,6 +214,11 @@ import { CustomerService } from '../../../core/services/customer.service';
                   formControlName="status"
                   [class.invalid]="isFieldInvalid('status')"
                 >
+                  <option [value]="CustomerStatus.NEW">Neu</option>
+                  <option [value]="CustomerStatus.CONTACTED">Kontaktiert</option>
+                  <option [value]="CustomerStatus.OFFER_CREATED">Angebot erstellt</option>
+                  <option [value]="CustomerStatus.WON">Gewonnen</option>
+                  <option [value]="CustomerStatus.LOST">Verloren</option>
                   <option [value]="CustomerStatus.POTENTIAL">Potenziell</option>
                   <option [value]="CustomerStatus.ACTIVE">Aktiv</option>
                   <option [value]="CustomerStatus.INACTIVE">Inaktiv</option>
@@ -240,6 +245,82 @@ import { CustomerService } from '../../../core/services/customer.service';
                   id="tags" 
                   formControlName="tags"
                   placeholder="Tags durch Komma getrennt"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Pipeline-Management -->
+          <div class="form-section">
+            <h2>Pipeline-Management</h2>
+            <div class="form-row">
+              <div class="form-field">
+                <label for="priority">Priorität *</label>
+                <select 
+                  id="priority" 
+                  formControlName="priority"
+                  [class.invalid]="isFieldInvalid('priority')"
+                >
+                  <option [value]="CustomerPriority.LOW">Niedrig</option>
+                  <option [value]="CustomerPriority.MEDIUM">Mittel</option>
+                  <option [value]="CustomerPriority.HIGH">Hoch</option>
+                  <option [value]="CustomerPriority.VIP">VIP</option>
+                </select>
+                <div class="error-message" *ngIf="isFieldInvalid('priority')">
+                  {{ getErrorMessage('priority') }}
+                </div>
+              </div>
+              <div class="form-field">
+                <label for="leadSource">Lead-Quelle *</label>
+                <select 
+                  id="leadSource" 
+                  formControlName="leadSource"
+                  [class.invalid]="isFieldInvalid('leadSource')"
+                >
+                  <option [value]="LeadSource.WEBSITE">Website</option>
+                  <option [value]="LeadSource.REFERRAL">Empfehlung</option>
+                  <option [value]="LeadSource.TRADE_FAIR">Messe</option>
+                  <option [value]="LeadSource.SOCIAL_MEDIA">Social Media</option>
+                  <option [value]="LeadSource.EMAIL_CAMPAIGN">E-Mail Kampagne</option>
+                  <option [value]="LeadSource.COLD_CALL">Kaltakquise</option>
+                  <option [value]="LeadSource.PARTNER">Partner</option>
+                  <option [value]="LeadSource.OTHER">Sonstiges</option>
+                </select>
+                <div class="error-message" *ngIf="isFieldInvalid('leadSource')">
+                  {{ getErrorMessage('leadSource') }}
+                </div>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-field">
+                <label for="estimatedValue">Geschätzter Wert (€)</label>
+                <input 
+                  type="number" 
+                  id="estimatedValue" 
+                  formControlName="estimatedValue"
+                  placeholder="z.B. 50000"
+                  min="0"
+                />
+              </div>
+              <div class="form-field">
+                <label for="probability">Wahrscheinlichkeit (%)</label>
+                <input 
+                  type="number" 
+                  id="probability" 
+                  formControlName="probability"
+                  placeholder="z.B. 75"
+                  min="0"
+                  max="100"
+                />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-field">
+                <label for="expectedCloseDate">Erwartetes Abschlussdatum</label>
+                <input 
+                  type="date" 
+                  id="expectedCloseDate" 
+                  formControlName="expectedCloseDate"
                 />
               </div>
             </div>
@@ -306,6 +387,8 @@ export class CustomerFormComponent implements OnInit {
   error = '';
 
   CustomerStatus = CustomerStatus; // Für Template-Zugriff
+  CustomerPriority = CustomerPriority; // Für Template-Zugriff
+  LeadSource = LeadSource; // Für Template-Zugriff
 
   constructor(
     private fb: FormBuilder,
@@ -341,7 +424,12 @@ export class CustomerFormComponent implements OnInit {
       city: [''],
       country: [''],
       website: [''],
-      status: [CustomerStatus.POTENTIAL, Validators.required],
+      status: [CustomerStatus.NEW, Validators.required], // Standard: NEW für Pipeline
+      priority: [CustomerPriority.MEDIUM, Validators.required],
+      leadSource: [LeadSource.WEBSITE, Validators.required],
+      estimatedValue: [null],
+      probability: [25], // Standard-Wahrscheinlichkeit für NEW
+      expectedCloseDate: [''],
       source: [''],
       tags: [''],
       notes: [''],
@@ -372,6 +460,11 @@ export class CustomerFormComponent implements OnInit {
           country: customer.country || '',
           website: customer.website || '',
           status: customer.status,
+          priority: customer.priority || CustomerPriority.MEDIUM,
+          leadSource: customer.leadSource || LeadSource.WEBSITE,
+          estimatedValue: customer.estimatedValue || null,
+          probability: customer.probability || 25,
+          expectedCloseDate: customer.expectedCloseDate || '',
           source: customer.source || '',
           tags: customer.tags || '',
           notes: customer.notes || '',
