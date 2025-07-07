@@ -23,7 +23,7 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
     /**
      * Findet Kunden anhand von Vor- oder Nachname (Case-insensitive)
      */
-    @Query("SELECT c FROM Customer c WHERE LOWER(c.firstName) LIKE LOWER(CONCAT('%', :name, '%')) OR LOWER(c.lastName) LIKE LOWER(CONCAT('%', :name, '%'))")
+    @Query(value = "SELECT * FROM customers c WHERE c.first_name ILIKE CONCAT('%', :name, '%') OR c.last_name ILIKE CONCAT('%', :name, '%')", nativeQuery = true)
     List<Customer> findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(@Param("name") String name);
 
     /**
@@ -84,25 +84,34 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
     /**
      * Findet Kunden anhand mehrerer Kriterien
      */
-    @Query("SELECT c FROM Customer c WHERE " +
-           "(:name IS NULL OR LOWER(c.firstName) LIKE LOWER(CONCAT('%', :name, '%')) OR LOWER(c.lastName) LIKE LOWER(CONCAT('%', :name, '%'))) AND " +
-           "(:email IS NULL OR LOWER(c.email) LIKE LOWER(CONCAT('%', :email, '%'))) AND " +
-           "(:company IS NULL OR LOWER(c.companyName) LIKE LOWER(CONCAT('%', :company, '%'))) AND " +
-           "(:city IS NULL OR LOWER(c.city) LIKE LOWER(CONCAT('%', :city, '%'))) AND " +
-           "(:status IS NULL OR c.status = :status)")
+    @Query(value = "SELECT * FROM customers c WHERE " +
+           "(:name IS NULL OR (c.first_name ILIKE CONCAT('%', :name, '%') OR c.last_name ILIKE CONCAT('%', :name, '%'))) AND " +
+           "(:email IS NULL OR c.email ILIKE CONCAT('%', :email, '%')) AND " +
+           "(:company IS NULL OR c.company_name ILIKE CONCAT('%', :company, '%')) AND " +
+           "(:city IS NULL OR c.city ILIKE CONCAT('%', :city, '%')) AND " +
+           "(:status IS NULL OR c.status = :status)", 
+           countQuery = "SELECT COUNT(*) FROM customers c WHERE " +
+           "(:name IS NULL OR (c.first_name ILIKE CONCAT('%', :name, '%') OR c.last_name ILIKE CONCAT('%', :name, '%'))) AND " +
+           "(:email IS NULL OR c.email ILIKE CONCAT('%', :email, '%')) AND " +
+           "(:company IS NULL OR c.company_name ILIKE CONCAT('%', :company, '%')) AND " +
+           "(:city IS NULL OR c.city ILIKE CONCAT('%', :city, '%')) AND " +
+           "(:status IS NULL OR c.status = :status)",
+           nativeQuery = true)
     Page<Customer> findBySearchCriteria(
             @Param("name") String name,
             @Param("email") String email,
             @Param("company") String company,
             @Param("city") String city,
-            @Param("status") CustomerStatus status,
+            @Param("status") String status,
             Pageable pageable
     );
+
+
 
     /**
      * Findet Kunden anhand von Tags
      */
-    @Query("SELECT c FROM Customer c WHERE c.tags LIKE %:tag%")
+    @Query(value = "SELECT * FROM customers c WHERE c.tags ILIKE CONCAT('%', :tag, '%')", nativeQuery = true)
     List<Customer> findByTag(@Param("tag") String tag);
 
     /**

@@ -72,6 +72,12 @@ public class CustomerController {
                 .map(existingCustomer -> {
                     Customer updatedCustomer = mapToCustomer(request);
                     updatedCustomer.setId(id);
+                    
+                    // Behalte das lastContact-Feld bei, wenn es nicht explizit gesetzt wird
+                    if (request.getLastContact() == null) {
+                        updatedCustomer.setLastContact(existingCustomer.getLastContact());
+                    }
+                    
                     Customer savedCustomer = customerService.updateCustomer(updatedCustomer);
                     return ResponseEntity.ok(mapToCustomerResponse(savedCustomer));
                 })
@@ -363,6 +369,7 @@ public class CustomerController {
                 .tags(request.getTags())
                 .notes(request.getNotes())
                 .internalNotes(request.getInternalNotes())
+                .lastContact(request.getLastContact())
                 .build();
     }
 
@@ -414,4 +421,4 @@ public class CustomerController {
         }
         throw new RuntimeException("Kein authentifizierter Benutzer gefunden");
     }
-} 
+}

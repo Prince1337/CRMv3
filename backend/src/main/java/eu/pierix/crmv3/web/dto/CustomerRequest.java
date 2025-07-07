@@ -9,6 +9,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 /**
  * DTO für Kundenanfragen (Erstellen/Aktualisieren)
  */
@@ -74,4 +76,7 @@ public class CustomerRequest {
 
     // Zuweisung
     private Long assignedToId;
+    
+    // Kontaktinformationen
+    private LocalDateTime lastContact;
 } 

@@ -8,6 +8,7 @@ import eu.pierix.crmv3.infrastructure.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -140,7 +141,13 @@ public class CustomerService {
      * Findet Kunden anhand mehrerer Kriterien
      */
     public Page<Customer> searchCustomers(String name, String email, String company, String city, CustomerStatus status, Pageable pageable) {
-        return customerRepository.findBySearchCriteria(name, email, company, city, status, pageable);
+        String statusString = status != null ? status.name() : null;
+        
+        // Erstelle eine unsortierte Pageable für die native Query
+        Pageable unsortedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
+        Page<Customer> customers = customerRepository.findBySearchCriteria(name, email, company, city, statusString, unsortedPageable);
+        
+        return customers;
     }
 
     /**

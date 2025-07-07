@@ -345,7 +345,8 @@ export class CustomerFormComponent implements OnInit {
       source: [''],
       tags: [''],
       notes: [''],
-      internalNotes: ['']
+      internalNotes: [''],
+      lastContact: ['']
     });
   }
 
@@ -374,7 +375,8 @@ export class CustomerFormComponent implements OnInit {
           source: customer.source || '',
           tags: customer.tags || '',
           notes: customer.notes || '',
-          internalNotes: customer.internalNotes || ''
+          internalNotes: customer.internalNotes || '',
+          lastContact: customer.lastContact || ''
         });
         this.loading = false;
       },

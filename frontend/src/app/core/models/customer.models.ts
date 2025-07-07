@@ -58,6 +58,7 @@ export interface CustomerRequest {
   notes?: string;
   internalNotes?: string;
   assignedToId?: number;
+  lastContact?: string;
 }
 
 export interface CustomerSearchRequest {

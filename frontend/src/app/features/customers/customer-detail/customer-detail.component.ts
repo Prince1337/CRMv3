@@ -59,8 +59,25 @@ import { catchError, switchMap } from 'rxjs/operators';
       </div>
       <div class="actions">
         <button class="btn-primary" (click)="editCustomer(customer.id)">Bearbeiten</button>
+        <button class="btn-danger" (click)="confirmDelete(customer)">Löschen</button>
       </div>
     </div>
+    
+    <!-- Bestätigungsdialog -->
+    <div class="modal-overlay" *ngIf="showDeleteConfirm" (click)="cancelDelete()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <h3>Kunde löschen</h3>
+        <p>Möchten Sie den Kunden <strong>{{ customerToDelete?.fullName }}</strong> wirklich löschen?</p>
+        <p class="warning-text">Diese Aktion kann nicht rückgängig gemacht werden.</p>
+        <div class="modal-actions">
+          <button class="btn-secondary" (click)="cancelDelete()">Abbrechen</button>
+          <button class="btn-danger" (click)="deleteCustomer()" [disabled]="deleting">
+            {{ deleting ? 'Lösche...' : 'Löschen' }}
+          </button>
+        </div>
+      </div>
+    </div>
+    
     <ng-template #loadingOrError>
       <div *ngIf="loading" class="loading">
         <div class="spinner"></div>
@@ -82,15 +99,13 @@ import { catchError, switchMap } from 'rxjs/operators';
       position: relative;
     }
     .back-btn {
-      position: absolute;
-      left: 2rem;
-      top: 1.5rem;
       font-size: 1rem;
       background: none;
       border: none;
       color: #007bff;
       cursor: pointer;
       padding: 0;
+      margin-bottom: 1rem;
     }
     .detail-header {
       display: flex;
@@ -146,6 +161,23 @@ import { catchError, switchMap } from 'rxjs/operators';
     .btn-primary:hover {
       background: #0056b3;
     }
+    .btn-danger {
+      background: #dc3545;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      padding: 0.5em 1.5em;
+      font-size: 1rem;
+      cursor: pointer;
+      margin-left: 0.5em;
+    }
+    .btn-danger:hover {
+      background: #c82333;
+    }
+    .btn-danger:disabled {
+      background: #6c757d;
+      cursor: not-allowed;
+    }
     .loading {
       text-align: center;
       margin: 3rem 0;
@@ -173,6 +205,63 @@ import { catchError, switchMap } from 'rxjs/operators';
       max-width: 400px;
       text-align: center;
     }
+    
+    /* Modal Styles */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    .modal-content {
+      background: #fff;
+      border-radius: 8px;
+      padding: 2rem;
+      max-width: 500px;
+      width: 90%;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    }
+    .modal-content h3 {
+      margin: 0 0 1rem 0;
+      color: #333;
+    }
+    .modal-content p {
+      margin: 0 0 1rem 0;
+      color: #666;
+    }
+    .warning-text {
+      color: #dc3545;
+      font-weight: 500;
+      background: #ffeaea;
+      padding: 0.5rem;
+      border-radius: 4px;
+      border-left: 4px solid #dc3545;
+    }
+    .modal-actions {
+      display: flex;
+      gap: 1rem;
+      justify-content: flex-end;
+      margin-top: 1.5rem;
+    }
+    .btn-secondary {
+      background: #6c757d;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      padding: 0.5em 1.5em;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    .btn-secondary:hover {
+      background: #5a6268;
+    }
+    
     @media (max-width: 700px) {
       .customer-detail-container {
         padding: 1rem 0.5rem;
@@ -180,6 +269,13 @@ import { catchError, switchMap } from 'rxjs/operators';
       .detail-content {
         flex-direction: column;
         gap: 1rem;
+      }
+      .modal-content {
+        margin: 1rem;
+        padding: 1.5rem;
+      }
+      .modal-actions {
+        flex-direction: column;
       }
     }
   `]
@@ -192,6 +288,11 @@ export class CustomerDetailComponent implements OnInit {
   customer$!: Observable<Customer | null>;
   loading = true;
   error = '';
+  
+  // Löschfunktion Variablen
+  showDeleteConfirm = false;
+  customerToDelete: Customer | null = null;
+  deleting = false;
 
   ngOnInit(): void {
     this.customer$ = this.route.paramMap.pipe(
@@ -222,5 +323,38 @@ export class CustomerDetailComponent implements OnInit {
 
   goBack() {
     this.router.navigate(['/customers']);
+  }
+  
+  // Löschfunktion Methoden
+  confirmDelete(customer: Customer) {
+    this.customerToDelete = customer;
+    this.showDeleteConfirm = true;
+  }
+  
+  cancelDelete() {
+    this.showDeleteConfirm = false;
+    this.customerToDelete = null;
+    this.deleting = false;
+  }
+  
+  deleteCustomer() {
+    if (!this.customerToDelete) return;
+    
+    this.deleting = true;
+    this.customerService.deleteCustomer(this.customerToDelete.id).subscribe({
+      next: () => {
+        this.deleting = false;
+        this.showDeleteConfirm = false;
+        this.customerToDelete = null;
+        // Zurück zur Kundenliste navigieren
+        this.router.navigate(['/customers']);
+      },
+      error: (error) => {
+        this.deleting = false;
+        console.error('Fehler beim Löschen des Kunden:', error);
+        // Hier könnte man eine Fehlermeldung anzeigen
+        alert('Fehler beim Löschen des Kunden. Bitte versuchen Sie es erneut.');
+      }
+    });
   }
 } 
