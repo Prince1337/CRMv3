@@ -29,6 +29,8 @@ export class AuthService {
     refreshToken: null
   });
 
+  private _isInitialized = false;
+
   public authState$ = this.authStateSubject.asObservable();
 
   constructor(
@@ -55,36 +57,58 @@ export class AuthService {
     const refreshToken = localStorage.getItem(this.REFRESH_TOKEN_KEY);
 
     if (accessToken && refreshToken) {
-      // User-Profile vom Backend laden
-      this.getUserProfile().subscribe({
-        next: (user) => {
-          localStorage.setItem(this.USER_KEY, JSON.stringify(user));
-          this.authStateSubject.next({
-            isAuthenticated: true,
-            user,
-            accessToken,
-            refreshToken
-          });
-        },
-        error: (error) => {
-          console.error('Fehler beim Laden des User-Profils beim Start:', error);
-          // Fallback: Gespeicherte User-Daten verwenden
-          const userStr = localStorage.getItem(this.USER_KEY);
-          const user = userStr ? JSON.parse(userStr) : null;
-          
-          if (user) {
+      // Lokale Token-Validierung (ohne Backend-Call)
+      try {
+        const payload = JSON.parse(atob(accessToken.split('.')[1]));
+        const currentTime = Math.floor(Date.now() / 1000);
+        
+        if (payload.exp && payload.exp < currentTime) {
+          console.warn('Token ist beim Start abgelaufen, führe Logout durch');
+          this.handleLogout();
+          this._isInitialized = true;
+          return;
+        }
+        
+        // Token ist gültig, User-Profile vom Backend laden
+        this.getUserProfile().subscribe({
+          next: (user) => {
+            localStorage.setItem(this.USER_KEY, JSON.stringify(user));
             this.authStateSubject.next({
               isAuthenticated: true,
               user,
               accessToken,
               refreshToken
             });
-          } else {
-            // Keine User-Daten verfügbar, Logout durchführen
-            this.handleLogout();
+            this._isInitialized = true;
+          },
+          error: (error) => {
+            console.error('Fehler beim Laden des User-Profils beim Start:', error);
+            // Fallback: Gespeicherte User-Daten verwenden
+            const userStr = localStorage.getItem(this.USER_KEY);
+            const user = userStr ? JSON.parse(userStr) : null;
+            
+            if (user) {
+              this.authStateSubject.next({
+                isAuthenticated: true,
+                user,
+                accessToken,
+                refreshToken
+              });
+            } else {
+              // Keine User-Daten verfügbar, Logout durchführen
+              this.handleLogout();
+            }
+            this._isInitialized = true;
           }
-        }
-      });
+        });
+      } catch (error) {
+        console.error('Fehler bei der lokalen Token-Validierung beim Start:', error);
+        this.handleLogout();
+        this._isInitialized = true;
+      }
+    } else {
+      // Keine Tokens vorhanden, Initialisierung abgeschlossen
+      this._isInitialized = true;
     }
   }
 
@@ -154,6 +178,32 @@ export class AuthService {
         tap(user => this.updateUserProfile(user)),
         catchError(this.handleError)
       );
+  }
+
+  /**
+   * Validiert den aktuellen Token am Backend
+   */
+  validateToken(): Observable<boolean> {
+    const token = this.getAccessToken();
+    
+    if (!token) {
+      return new Observable<boolean>(observer => {
+        observer.next(false);
+        observer.complete();
+      });
+    }
+
+    return this.http.post<boolean>(`${this.API_URL}/auth/validate`, {}, {
+      headers: { Authorization: `Bearer ${token}` }
+    }).pipe(
+      catchError(error => {
+        console.error('Token-Validierung fehlgeschlagen:', error);
+        return new Observable<boolean>(observer => {
+          observer.next(false);
+          observer.complete();
+        });
+      })
+    );
   }
 
   private handleAuthSuccess(response: AuthResponse): void {
@@ -276,8 +326,95 @@ export class AuthService {
     return localStorage.getItem(this.REFRESH_TOKEN_KEY);
   }
 
+  /**
+   * Prüft ob der Benutzer authentifiziert ist (synchron)
+   * Diese Methode prüft nur den lokalen Zustand
+   */
   isAuthenticated(): boolean {
-    return this.authStateSubject.value.isAuthenticated;
+    const currentState = this.authStateSubject.value;
+    
+    // Prüfe ob Tokens vorhanden sind
+    if (!currentState.accessToken || !currentState.refreshToken) {
+      return false;
+    }
+
+    // Prüfe Token-Expiration lokal (ohne Backend-Call)
+    try {
+      const token = currentState.accessToken;
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const currentTime = Math.floor(Date.now() / 1000);
+      
+      if (payload.exp && payload.exp < currentTime) {
+        console.warn('Token ist abgelaufen, führe Logout durch');
+        this.handleLogout();
+        return false;
+      }
+    } catch (error) {
+      console.error('Fehler beim Prüfen der Token-Expiration:', error);
+      this.handleLogout();
+      return false;
+    }
+
+    return currentState.isAuthenticated;
+  }
+
+  /**
+   * Prüft ob der Benutzer authentifiziert ist (asynchron mit lokaler Validierung)
+   */
+  isAuthenticatedAsync(): Observable<boolean> {
+    // Warte bis die Initialisierung abgeschlossen ist
+    if (!this._isInitialized) {
+      return new Observable<boolean>(observer => {
+        // Warte bis Initialisierung abgeschlossen ist
+        const checkInitialization = () => {
+          if (this._isInitialized) {
+            observer.next(this.isAuthenticated());
+            observer.complete();
+          } else {
+            setTimeout(checkInitialization, 50);
+          }
+        };
+        checkInitialization();
+      });
+    }
+
+    const currentState = this.authStateSubject.value;
+    
+    // Prüfe ob Tokens vorhanden sind
+    if (!currentState.accessToken || !currentState.refreshToken) {
+      return new Observable<boolean>(observer => {
+        observer.next(false);
+        observer.complete();
+      });
+    }
+
+    // Lokale Token-Validierung (ohne Backend-Call)
+    try {
+      const token = currentState.accessToken;
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const currentTime = Math.floor(Date.now() / 1000);
+      
+      if (payload.exp && payload.exp < currentTime) {
+        console.warn('Token ist abgelaufen, führe Logout durch');
+        this.handleLogout();
+        return new Observable<boolean>(observer => {
+          observer.next(false);
+          observer.complete();
+        });
+      }
+      
+      return new Observable<boolean>(observer => {
+        observer.next(true);
+        observer.complete();
+      });
+    } catch (error) {
+      console.error('Fehler beim Prüfen der Token-Expiration:', error);
+      this.handleLogout();
+      return new Observable<boolean>(observer => {
+        observer.next(false);
+        observer.complete();
+      });
+    }
   }
 
   hasRole(role: string): boolean {
@@ -291,5 +428,12 @@ export class AuthService {
 
   getCurrentUser(): UserProfile | null {
     return this.authStateSubject.value.user;
+  }
+
+  /**
+   * Prüft ob die Initialisierung abgeschlossen ist
+   */
+  isInitialized(): boolean {
+    return this._isInitialized;
   }
 } 

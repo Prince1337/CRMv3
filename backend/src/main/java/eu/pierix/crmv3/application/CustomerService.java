@@ -17,6 +17,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import eu.pierix.crmv3.domain.Offer;
+import eu.pierix.crmv3.infrastructure.OfferRepository;
 
 /**
  * Service für Kundenverwaltung
@@ -28,6 +30,7 @@ public class CustomerService {
 
     private final CustomerRepository customerRepository;
     private final UserRepository userRepository;
+    private final OfferRepository offerRepository;
 
     // CRUD Operationen
     /**
@@ -62,6 +65,16 @@ public class CustomerService {
      * Löscht einen Kunden
      */
     public void deleteCustomer(Long id) {
+        Customer customer = customerRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Kunde nicht gefunden: " + id));
+        
+        // Zuerst alle zugehörigen Angebote löschen
+        List<Offer> offers = offerRepository.findByCustomer(customer);
+        for (Offer offer : offers) {
+            offerRepository.deleteById(offer.getId());
+        }
+        
+        // Dann den Kunden löschen
         customerRepository.deleteById(id);
     }
 
@@ -237,6 +250,7 @@ public class CustomerService {
         Customer customer = customerRepository.findById(customerId)
                 .orElseThrow(() -> new RuntimeException("Kunde nicht gefunden: " + customerId));
         
+        customer.setStatus(CustomerStatus.CONTACTED);
         customer.setLastContact(LocalDateTime.now());
         return customerRepository.save(customer);
     }

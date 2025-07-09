@@ -5,6 +5,7 @@ import { Router, RouterModule } from '@angular/router';
 import { Customer, CustomerStatus, CustomerSearchRequest } from '../../../core/models/customer.models';
 import { CustomerService } from '../../../core/services/customer.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { PipelineUpdateService } from '../../../core/services/pipeline-update.service';
 
 @Component({
   selector: 'app-customer-list',
@@ -102,11 +103,6 @@ import { AuthService } from '../../../core/services/auth.service';
             <button (click)="clearSearch()" class="btn-secondary">Zurücksetzen</button>
           </div>
         </div>
-      </div>
-
-      <!-- Fehlermeldung -->
-      <div *ngIf="error" class="error-message">
-        {{ error }}
       </div>
 
       <!-- Ladeindikator -->
@@ -263,7 +259,8 @@ export class CustomerListComponent implements OnInit {
   constructor(
     public customerService: CustomerService,
     public authService: AuthService,
-    private router: Router
+    private router: Router,
+    private pipelineUpdateService: PipelineUpdateService
   ) {}
 
   ngOnInit(): void {
@@ -421,22 +418,26 @@ export class CustomerListComponent implements OnInit {
   }
 
   navigateToPipeline(): void {
-    this.router.navigate(['/customers/pipeline']);
+    this.router.navigate(['/pipeline']);
   }
 
   markAsContacted(id: number): void {
-    this.customerService.markCustomerAsContacted(id).subscribe({
-      next: () => {
-        this.searchCustomers();
-      },
-      error: (error) => {
-        this.error = 'Fehler beim Markieren als kontaktiert: ' + error.message;
-      }
-    });
+    if (confirm('Möchten Sie diesen Kunden wirklich als kontaktiert markieren?')) {
+      this.customerService.markCustomerAsContacted(id).subscribe({
+        next: () => {
+          this.loadCustomers(); // Reload all customers to see the change
+          this.pipelineUpdateService.notifyPipelineUpdate();
+        },
+        error: (err) => {
+          this.error = 'Fehler beim Markieren des Kunden als kontaktiert.';
+          console.error(err);
+        }
+      });
+    }
   }
 
   deleteCustomer(id: number): void {
-    if (confirm('Sind Sie sicher, dass Sie diesen Kunden löschen möchten?')) {
+    if (confirm('Möchten Sie diesen Kunden wirklich löschen? Dies kann nicht rückgängig gemacht werden.')) {
       this.customerService.deleteCustomer(id).subscribe({
         next: () => {
           this.searchCustomers();

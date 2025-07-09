@@ -137,4 +137,25 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
      */
     @Query("SELECT c.source, COUNT(c) FROM Customer c WHERE c.source IS NOT NULL GROUP BY c.source ORDER BY COUNT(c) DESC")
     List<Object[]> countBySourceGrouped();
+
+    // Statistik-Methoden für StatisticsService
+    /**
+     * Zählt Kunden mit einem der angegebenen Status
+     */
+    long countByStatusIn(List<CustomerStatus> statuses);
+
+    /**
+     * Zählt Kunden nach LeadSource
+     */
+    long countByLeadSource(eu.pierix.crmv3.domain.LeadSource leadSource);
+
+    /**
+     * Zählt gewonnene Kunden nach LeadSource
+     */
+    long countByLeadSourceAndStatus(eu.pierix.crmv3.domain.LeadSource leadSource, CustomerStatus status);
+
+    /**
+     * Zählt Kunden nach Status und Erstellungsdatum
+     */
+    long countByStatusAndCreatedAtBetween(CustomerStatus status, LocalDateTime startDate, LocalDateTime endDate);
 } 

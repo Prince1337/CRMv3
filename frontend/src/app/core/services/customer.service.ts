@@ -129,6 +129,8 @@ export class CustomerService {
       case LeadSource.SOCIAL_MEDIA: return 'Social Media';
       case LeadSource.EMAIL_CAMPAIGN: return 'E-Mail Kampagne';
       case LeadSource.COLD_CALL: return 'Kaltakquise';
+      case LeadSource.PHONE_CALL: return 'Telefonanruf';
+      case LeadSource.LINKEDIN: return 'LinkedIn';
       case LeadSource.PARTNER: return 'Partner';
       case LeadSource.OTHER: return 'Sonstiges';
       default: return source;

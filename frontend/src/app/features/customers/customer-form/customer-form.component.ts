@@ -228,13 +228,19 @@ import { CustomerService } from '../../../core/services/customer.service';
                 </div>
               </div>
               <div class="form-field">
-                <label for="source">Quelle</label>
-                <input 
-                  type="text" 
-                  id="source" 
-                  formControlName="source"
-                  placeholder="z.B. Website, Empfehlung, Messe"
-                />
+                <label for="leadSource">Quelle *</label>
+                <select 
+                  id="leadSource" 
+                  formControlName="leadSource"
+                  [class.invalid]="isFieldInvalid('leadSource')"
+                >
+                  <option *ngFor="let source of leadSourceValues" [value]="source">
+                    {{ customerService.getLeadSourceDisplayName(source) }}
+                  </option>
+                </select>
+                <div class="error-message" *ngIf="isFieldInvalid('leadSource')">
+                  {{ getErrorMessage('leadSource') }}
+                </div>
               </div>
             </div>
             <div class="form-row">
@@ -270,28 +276,6 @@ import { CustomerService } from '../../../core/services/customer.service';
                   {{ getErrorMessage('priority') }}
                 </div>
               </div>
-              <div class="form-field">
-                <label for="leadSource">Lead-Quelle *</label>
-                <select 
-                  id="leadSource" 
-                  formControlName="leadSource"
-                  [class.invalid]="isFieldInvalid('leadSource')"
-                >
-                  <option [value]="LeadSource.WEBSITE">Website</option>
-                  <option [value]="LeadSource.REFERRAL">Empfehlung</option>
-                  <option [value]="LeadSource.TRADE_FAIR">Messe</option>
-                  <option [value]="LeadSource.SOCIAL_MEDIA">Social Media</option>
-                  <option [value]="LeadSource.EMAIL_CAMPAIGN">E-Mail Kampagne</option>
-                  <option [value]="LeadSource.COLD_CALL">Kaltakquise</option>
-                  <option [value]="LeadSource.PARTNER">Partner</option>
-                  <option [value]="LeadSource.OTHER">Sonstiges</option>
-                </select>
-                <div class="error-message" *ngIf="isFieldInvalid('leadSource')">
-                  {{ getErrorMessage('leadSource') }}
-                </div>
-              </div>
-            </div>
-            <div class="form-row">
               <div class="form-field">
                 <label for="estimatedValue">Geschätzter Wert (€)</label>
                 <input 
@@ -388,11 +372,11 @@ export class CustomerFormComponent implements OnInit {
 
   CustomerStatus = CustomerStatus; // Für Template-Zugriff
   CustomerPriority = CustomerPriority; // Für Template-Zugriff
-  LeadSource = LeadSource; // Für Template-Zugriff
+  leadSourceValues = Object.values(LeadSource);
 
   constructor(
     private fb: FormBuilder,
-    private customerService: CustomerService,
+    public customerService: CustomerService,
     private route: ActivatedRoute,
     private router: Router
   ) {
@@ -410,25 +394,25 @@ export class CustomerFormComponent implements OnInit {
 
   private createForm(): FormGroup {
     return this.fb.group({
-      firstName: ['', [Validators.required, Validators.minLength(2)]],
-      lastName: ['', [Validators.required, Validators.minLength(2)]],
+      firstName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(50)]],
+      lastName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(50)]],
       email: ['', [Validators.required, Validators.email]],
-      phone: [''],
-      mobile: [''],
-      companyName: [''],
-      position: [''],
-      department: [''],
-      street: [''],
-      houseNumber: [''],
-      postalCode: [''],
-      city: [''],
-      country: [''],
-      website: [''],
-      status: [CustomerStatus.NEW, Validators.required], // Standard: NEW für Pipeline
+      phone: ['', [Validators.pattern('^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\\s\\./0-9]*$')]],
+      mobile: ['', [Validators.pattern('^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\\s\\./0-9]*$')]],
+      website: ['', [Validators.pattern('https?://.+')]],
+      companyName: ['', [Validators.maxLength(100)]],
+      position: ['', [Validators.maxLength(50)]],
+      department: ['', [Validators.maxLength(50)]],
+      street: ['', [Validators.maxLength(100)]],
+      houseNumber: ['', [Validators.maxLength(10)]],
+      postalCode: ['', [Validators.maxLength(10)]],
+      city: ['', [Validators.maxLength(50)]],
+      country: ['', [Validators.maxLength(50)]],
+      status: [CustomerStatus.NEW, Validators.required],
       priority: [CustomerPriority.MEDIUM, Validators.required],
-      leadSource: [LeadSource.WEBSITE, Validators.required],
-      estimatedValue: [null],
-      probability: [25], // Standard-Wahrscheinlichkeit für NEW
+      leadSource: [LeadSource.OTHER, Validators.required],
+      estimatedValue: [0, [Validators.min(0)]],
+      probability: [0, [Validators.min(0), Validators.max(100)]],
       expectedCloseDate: [''],
       source: [''],
       tags: [''],

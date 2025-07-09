@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { CanActivate, Router, ActivatedRouteSnapshot, UrlTree } from '@angular/router';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 
 @Injectable({
@@ -19,18 +19,23 @@ export class RoleGuard implements CanActivate {
       return true;
     }
 
-    if (!this.authService.isAuthenticated()) {
-      this.router.navigate(['/login']);
-      return false;
-    }
+    // Verwende die asynchrone Authentifizierungsprüfung mit Backend-Validierung
+    return this.authService.isAuthenticatedAsync().pipe(
+      map(isAuthenticated => {
+        if (!isAuthenticated) {
+          this.router.navigate(['/login']);
+          return false;
+        }
 
-    const hasRequiredRole = requiredRoles.some(role => this.authService.hasRole(role));
-    
-    if (hasRequiredRole) {
-      return true;
-    } else {
-      this.router.navigate(['/unauthorized']);
-      return false;
-    }
+        const hasRequiredRole = requiredRoles.some(role => this.authService.hasRole(role));
+        
+        if (hasRequiredRole) {
+          return true;
+        } else {
+          this.router.navigate(['/unauthorized']);
+          return false;
+        }
+      })
+    );
   }
 } 

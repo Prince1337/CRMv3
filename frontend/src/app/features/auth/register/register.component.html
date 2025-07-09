@@ -15,6 +15,7 @@
             formControlName="firstName"
             [class.invalid]="isFieldInvalid('firstName')"
             placeholder="Vorname eingeben"
+            autocomplete="given-name"
           />
           <div class="error-message" *ngIf="isFieldInvalid('firstName')">
             {{ getErrorMessage('firstName') }}
@@ -29,6 +30,7 @@
             formControlName="lastName"
             [class.invalid]="isFieldInvalid('lastName')"
             placeholder="Nachname eingeben"
+            autocomplete="family-name"
           />
           <div class="error-message" *ngIf="isFieldInvalid('lastName')">
             {{ getErrorMessage('lastName') }}
@@ -44,6 +46,7 @@
           formControlName="username"
           [class.invalid]="isFieldInvalid('username')"
           placeholder="Benutzername eingeben"
+          autocomplete="username"
         />
         <div class="error-message" *ngIf="isFieldInvalid('username')">
           {{ getErrorMessage('username') }}
@@ -58,6 +61,7 @@
           formControlName="email"
           [class.invalid]="isFieldInvalid('email')"
           placeholder="E-Mail-Adresse eingeben"
+          autocomplete="email"
         />
         <div class="error-message" *ngIf="isFieldInvalid('email')">
           {{ getErrorMessage('email') }}
@@ -72,6 +76,7 @@
           formControlName="password"
           [class.invalid]="isFieldInvalid('password')"
           placeholder="Passwort eingeben"
+          autocomplete="new-password"
         />
         <div class="error-message" *ngIf="isFieldInvalid('password')">
           {{ getErrorMessage('password') }}
@@ -86,6 +91,7 @@
           formControlName="confirmPassword"
           [class.invalid]="isFieldInvalid('confirmPassword')"
           placeholder="Passwort wiederholen"
+          autocomplete="new-password"
         />
         <div class="error-message" *ngIf="isFieldInvalid('confirmPassword')">
           {{ getErrorMessage('confirmPassword') }}

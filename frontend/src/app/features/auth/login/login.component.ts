@@ -34,38 +34,28 @@ export class LoginComponent {
 
       this.authService.login(this.loginForm.value).subscribe({
         next: () => {
-          console.log('Login erfolgreich, Weiterleitung wird von AppComponent übernommen');
           this.isLoading = false;
-          // Navigation wird von AppComponent übernommen
+          this.router.navigate(['/customers']);
         },
         error: (error) => {
           this.errorMessage = error.message;
           this.isLoading = false;
         }
       });
-    } else {
-      this.markFormGroupTouched();
     }
-  }
-
-  private markFormGroupTouched(): void {
-    Object.keys(this.loginForm.controls).forEach(key => {
-      const control = this.loginForm.get(key);
-      control?.markAsTouched();
-    });
   }
 
   getErrorMessage(fieldName: string): string {
     const field = this.loginForm.get(fieldName);
-    
+
     if (field?.hasError('required')) {
       return `${this.getFieldDisplayName(fieldName)} ist erforderlich`;
     }
-    
+
     if (fieldName === 'password' && field?.hasError('minlength')) {
       return 'Passwort muss mindestens 6 Zeichen lang sein';
     }
-    
+
     return '';
   }
 

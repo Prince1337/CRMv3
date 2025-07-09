@@ -10,6 +10,8 @@ public enum LeadSource {
     SOCIAL_MEDIA("Social Media"),
     EMAIL_CAMPAIGN("E-Mail Kampagne"),
     COLD_CALL("Kaltakquise"),
+    PHONE_CALL("Telefonanruf"),
+    LINKEDIN("LinkedIn"),
     PARTNER("Partner"),
     OTHER("Sonstiges");
 

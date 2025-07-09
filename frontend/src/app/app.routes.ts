@@ -24,7 +24,7 @@ export const routes: Routes = [
   },
   { 
     path: 'customers/pipeline', 
-    loadComponent: () => import('./features/customers/pipeline/pipeline.component').then(m => m.PipelineComponent),
+    loadComponent: () => import('./features/pipeline/pipeline.component').then(m => m.PipelineComponent),
     canActivate: [AuthGuard]
   },
   { 
@@ -42,6 +42,11 @@ export const routes: Routes = [
     loadComponent: () => import('./features/statistics/statistics.component').then(m => m.StatisticsComponent),
     canActivate: [AuthGuard, RoleGuard],
     data: { roles: ['ROLE_ADMIN'] }
+  },
+  { 
+    path: 'offers', 
+    loadChildren: () => import('./features/offers/offers.routes').then(m => m.OFFER_ROUTES),
+    canActivate: [AuthGuard]
   },
   { path: '**', redirectTo: '/dashboard' }
 ];

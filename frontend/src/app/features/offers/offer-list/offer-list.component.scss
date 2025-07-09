@@ -1,0 +1,460 @@
+// OfferListComponent Styles
+.offer-list-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 1.5rem;
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+  }
+}
+
+// Header Section
+.list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #e5e7eb;
+
+  h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #374151;
+    margin: 0;
+
+    @media (max-width: 768px) {
+      font-size: 1.5rem;
+    }
+  }
+
+  .new-offer-button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background-color: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 0.375rem;
+    font-weight: 600;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+
+    &:hover {
+      background-color: #2563eb;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+
+    @media (max-width: 768px) {
+      padding: 0.5rem 1rem;
+      font-size: 0.75rem;
+    }
+  }
+}
+
+// Table Container
+.table-container {
+  background: white;
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border: 1px solid #e5e7eb;
+  overflow: hidden;
+  transition: box-shadow 0.2s ease;
+
+  &:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  }
+}
+
+// Table Styles
+.offer-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  thead {
+    background-color: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+
+    th {
+      padding: 1rem 1.5rem;
+      text-align: left;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: white;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      white-space: nowrap;
+
+      @media (max-width: 1024px) {
+        padding: 0.75rem 1rem;
+        font-size: 0.7rem;
+      }
+
+      @media (max-width: 768px) {
+        padding: 0.5rem;
+        font-size: 0.65rem;
+      }
+    }
+  }
+
+  tbody {
+    tr {
+      border-bottom: 1px solid #f3f4f6;
+      transition: background-color 0.2s ease;
+
+      &:hover {
+        background-color: #f9fafb;
+      }
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      td {
+        padding: 1rem 1.5rem;
+        font-size: 0.875rem;
+        color: white;
+        vertical-align: middle;
+
+        @media (max-width: 1024px) {
+          padding: 0.75rem 1rem;
+          font-size: 0.8rem;
+        }
+
+        @media (max-width: 768px) {
+          padding: 0.5rem;
+          font-size: 0.75rem;
+        }
+
+        &.offer-number {
+          font-weight: 600;
+          color: white;
+          font-family: 'Courier New', monospace;
+        }
+
+        &.offer-title {
+          font-weight: 500;
+          color: white;
+          max-width: 200px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+
+          @media (max-width: 768px) {
+            max-width: 120px;
+          }
+        }
+
+        &.customer-name {
+          color: white;
+          max-width: 150px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+
+          @media (max-width: 768px) {
+            max-width: 100px;
+          }
+        }
+
+        &.amount {
+          font-weight: 600;
+          color: #059669;
+          font-family: 'Courier New', monospace;
+        }
+
+        &.date {
+          color: #6b7280;
+          font-size: 0.8rem;
+        }
+      }
+    }
+  }
+}
+
+// Status Badge
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+
+  &.draft {
+    background-color: #f3f4f6;
+    color: orangered;
+  }
+
+  &.sent {
+    background-color: #dbeafe;
+    color: #1e40af;
+  }
+
+  &.paid {
+    background-color: #d1fae5;
+    color: #065f46;
+  }
+
+  &.overdue {
+    background-color: #fee2e2;
+    color: #991b1b;
+  }
+}
+
+// Action Buttons
+.action-buttons {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  button {
+    padding: 0.25rem 0.5rem;
+    border: none;
+    background: none;
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+    border-radius: 0.25rem;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    white-space: nowrap;
+
+    &.view-button {
+      color: #3b82f6;
+
+      &:hover {
+        color: #1e40af;
+        background-color: #dbeafe;
+      }
+    }
+
+    &.send-button {
+      color: #059669;
+
+      &:hover {
+        color: #047857;
+        background-color: #d1fae5;
+      }
+    }
+
+    &.paid-button {
+      color: #059669;
+
+      &:hover {
+        color: #047857;
+        background-color: #d1fae5;
+      }
+    }
+
+    &.pdf-button {
+      color: #7c3aed;
+      font-weight: 600;
+
+      &:hover {
+        color: #5b21b6;
+        background-color: #ede9fe;
+      }
+    }
+
+    &:disabled {
+      color: #9ca3af;
+      cursor: not-allowed;
+      background-color: transparent;
+
+      &:hover {
+        background-color: transparent;
+      }
+    }
+  }
+}
+
+// Empty State
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: #6b7280;
+
+  .empty-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+  }
+
+  h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: white;
+    margin-bottom: 0.5rem;
+  }
+
+  p {
+    font-size: 0.875rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .create-first-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background-color: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 0.375rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background-color: #2563eb;
+      transform: translateY(-1px);
+    }
+  }
+}
+
+// Loading State
+.loading-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: #6b7280;
+
+  .loading-spinner {
+    display: inline-block;
+    width: 2rem;
+    height: 2rem;
+    border: 3px solid #e5e7eb;
+    border-radius: 50%;
+    border-top-color: #3b82f6;
+    animation: spin 1s ease-in-out infinite;
+    margin-bottom: 1rem;
+  }
+
+  p {
+    font-size: 0.875rem;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// Responsive Design
+@media (max-width: 1024px) {
+  .offer-table {
+    thead th:nth-child(5),
+    tbody td:nth-child(5) {
+      display: none; // Hide amount column on smaller screens
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .offer-list-container {
+    padding: 0.75rem;
+  }
+
+  .list-header {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+
+    .new-offer-button {
+      justify-content: center;
+    }
+  }
+
+  .table-container {
+    border-radius: 0.5rem;
+    overflow-x: auto;
+  }
+
+  .offer-table {
+    min-width: 600px; // Ensure table is scrollable on mobile
+
+    thead th:nth-child(4),
+    tbody td:nth-child(4),
+    thead th:nth-child(6),
+    tbody td:nth-child(6) {
+      display: none; // Hide status and date columns on mobile
+    }
+  }
+}
+
+@media (max-width: 640px) {
+  .offer-table {
+    thead th:nth-child(3),
+    tbody td:nth-child(3) {
+      display: none; // Hide customer column on very small screens
+    }
+  }
+}
+
+// Print Styles
+@media print {
+  .list-header .new-offer-button,
+  .action-buttons {
+    display: none !important;
+  }
+
+  .table-container {
+    box-shadow: none;
+    border: 1px solid #000;
+  }
+
+  .offer-table {
+    thead {
+      background-color: #f0f0f0 !important;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid #000;
+    }
+  }
+}
+
+// Dark mode support (optional)
+@media (prefers-color-scheme: dark) {
+  .offer-list-container {
+    color: #f9fafb;
+  }
+
+  .table-container {
+    background-color: #374151;
+    border-color: #4b5563;
+  }
+
+  .offer-table {
+    thead {
+      background-color: #4b5563;
+    }
+
+    tbody tr {
+      border-color: #4b5563;
+
+      &:hover {
+        background-color: #4b5563;
+      }
+    }
+  }
+} 

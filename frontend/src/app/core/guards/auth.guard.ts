@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { CanActivate, Router, UrlTree } from '@angular/router';
-import { Observable } from 'rxjs';
+import { Observable, map, delay, retry } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 
 @Injectable({
@@ -13,11 +13,20 @@ export class AuthGuard implements CanActivate {
   ) {}
 
   canActivate(): Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | boolean | UrlTree {
-    if (this.authService.isAuthenticated()) {
-      return true;
-    } else {
-      this.router.navigate(['/login']);
-      return false;
-    }
+    // Warte bis die Initialisierung abgeschlossen ist, dann prüfe Authentifizierung
+    return this.authService.isAuthenticatedAsync().pipe(
+      map(isAuthenticated => {
+        if (isAuthenticated) {
+          return true;
+        } else {
+          // Nur zum Login weiterleiten wenn nicht bereits auf Login-Seite
+          const currentPath = this.router.url;
+          if (currentPath !== '/login' && currentPath !== '/register') {
+            this.router.navigate(['/login']);
+          }
+          return false;
+        }
+      })
+    );
   }
 } 

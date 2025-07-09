@@ -58,23 +58,15 @@ export class AppComponent implements OnInit, OnDestroy {
   private authSubscription: any;
 
   ngOnInit(): void {
-    // Kontinuierlich auf AuthState-Änderungen reagieren
+    // Nur für Debugging: AuthState-Änderungen loggen
     this.authSubscription = this.authService.authState$.subscribe(authState => {
       const currentPath = this.router.url;
       console.log('AuthState geändert:', authState.isAuthenticated, 'Aktueller Pfad:', currentPath);
       
-      if (authState.isAuthenticated) {
-        // Wenn authentifiziert und auf Login/Register, zum Dashboard weiterleiten
-        if (currentPath === '/login' || currentPath === '/register' || currentPath === '/') {
-          console.log('Weiterleitung zum Dashboard...');
-          this.router.navigate(['/dashboard']);
-        }
-      } else {
-        // Wenn nicht authentifiziert und nicht auf Login/Register, zum Login weiterleiten
-        if (currentPath !== '/login' && currentPath !== '/register') {
-          console.log('Weiterleitung zum Login...');
-          this.router.navigate(['/login']);
-        }
+      // Navigation wird nur durch AuthGuard gesteuert, nicht hier
+      // Nur bei Login/Register-Seiten zur Dashboard weiterleiten wenn authentifiziert
+      if (authState.isAuthenticated && (currentPath === '/login' || currentPath === '/register')) {
+        this.router.navigate(['/dashboard']);
       }
     });
   }

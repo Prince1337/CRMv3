@@ -58,6 +58,9 @@ import { CustomerStatisticsResponse } from '../../core/models/customer.models';
             <button (click)="navigateToCustomers()" class="action-button primary">
               👥 Kunden verwalten
             </button>
+            <button (click)="navigateToOffers()" class="action-button secondary">
+              📄 Angebote
+            </button>
             <button (click)="navigateToPipeline()" class="action-button secondary">
               📈 Pipeline
             </button>
@@ -196,6 +199,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   navigateToCustomers(): void {
     this.router.navigate(['/customers']);
+  }
+
+  navigateToOffers(): void {
+    this.router.navigate(['/offers']);
+  }
+
+  navigateToInvoices(): void {
+    this.router.navigate(['/invoices']);
   }
 
   navigateToPipeline(): void {

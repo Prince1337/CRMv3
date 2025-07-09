@@ -1,9 +1,11 @@
-import { Component, OnInit, HostListener } from '@angular/core';
+import { Component, OnInit, HostListener, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { CustomerService } from '../../../core/services/customer.service';
-import { Customer, CustomerStatus, CustomerPriority, LeadSource, PipelineCustomers, PipelineStatistics } from '../../../core/models/customer.models';
+import { CustomerService } from '../../core/services/customer.service';
+import { Customer, CustomerStatus, CustomerPriority, LeadSource, PipelineCustomers, PipelineStatistics } from '../../core/models/customer.models';
+import { PipelineUpdateService } from '../../core/services/pipeline-update.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-pipeline',
@@ -12,7 +14,7 @@ import { Customer, CustomerStatus, CustomerPriority, LeadSource, PipelineCustome
   templateUrl: './pipeline.component.html',
   styleUrls: ['./pipeline.component.scss']
 })
-export class PipelineComponent implements OnInit {
+export class PipelineComponent implements OnInit, OnDestroy {
   pipelineCustomers: PipelineCustomers = {};
   statistics: PipelineStatistics | null = null;
   loading = true;
@@ -22,6 +24,7 @@ export class PipelineComponent implements OnInit {
   showStatusModal = false;
   selectedCustomer: Customer | null = null;
   selectedNewStatus: CustomerStatus | null = null;
+  private updateSubscription: Subscription | undefined;
 
   // Pipeline-Status in der richtigen Reihenfolge
   pipelineStatuses = [
@@ -34,11 +37,21 @@ export class PipelineComponent implements OnInit {
 
   constructor(
     private customerService: CustomerService,
-    private router: Router
+    private router: Router,
+    private pipelineUpdateService: PipelineUpdateService
   ) {}
 
   ngOnInit(): void {
     this.loadPipelineData();
+    this.updateSubscription = this.pipelineUpdateService.pipelineUpdate$.subscribe(() => {
+      this.loadPipelineData();
+    });
+  }
+
+  ngOnDestroy(): void {
+    if (this.updateSubscription) {
+      this.updateSubscription.unsubscribe();
+    }
   }
 
   loadPipelineData(): void {
