@@ -5,6 +5,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { UserProfile } from '../../core/models/auth.models';
 import { CustomerService } from '../../core/services/customer.service';
 import { CustomerStatisticsResponse } from '../../core/models/customer.models';
+import { gsap } from 'gsap';
 
 @Component({
   selector: 'app-dashboard',
@@ -47,6 +48,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
     
     this.loadCustomerStats();
+    this.animateDashboard();
   }
 
   ngOnDestroy(): void {
@@ -137,5 +139,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
   // Öffentliche Methode zum Aktualisieren der Statistiken
   refreshStats(): void {
     this.loadCustomerStats();
+  }
+
+  private animateDashboard() {
+    gsap.from('.card', {
+      duration: 0.8,
+      y: 50,
+      opacity: 0,
+      stagger: 0.2,
+      ease: "power2.out"
+    });
   }
 } 
