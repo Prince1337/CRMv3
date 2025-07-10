@@ -1,0 +1,30 @@
+# Production Dockerfile - verwendet fertige app.jar
+FROM eclipse-temurin:21-jre-jammy
+
+# Arbeitsverzeichnis setzen
+WORKDIR /app
+
+# Kopiere die fertige JAR-Datei
+COPY app.jar ./app.jar
+
+# Erstelle einen nicht-root Benutzer für Sicherheit
+RUN groupadd -r crmuser && useradd -r -g crmuser crmuser
+
+# Ändere Besitzer der JAR-Datei
+RUN chown crmuser:crmuser app.jar
+
+# Wechsle zu nicht-root Benutzer
+USER crmuser
+
+# Expose Port 8080
+EXPOSE 8080
+
+# JVM-Optionen für Production
+ENV JAVA_OPTS="-Xms512m -Xmx2g -XX:+UseG1GC -XX:+UseStringDeduplication -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0"
+
+# Health Check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+  CMD curl -f http://localhost:8080/actuator/health || exit 1
+
+# Starte die Spring Boot Anwendung
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"] 

@@ -2,12 +2,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { StatisticsResponse } from '../models/statistics.models';
+import { ApiConfig } from '../config/api.config';
 
 @Injectable({
   providedIn: 'root'
 })
 export class StatisticsService {
-  private readonly API_URL = 'http://localhost:8080/api/statistics';
+  private readonly API_URL = `${ApiConfig.API_BASE_URL}/statistics`;
 
   constructor(private http: HttpClient) {}
 

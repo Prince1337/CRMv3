@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 /**
  * Entity für Angebotspositionen
@@ -60,7 +61,7 @@ public class OfferItem {
             netAmount = unitPrice.multiply(new BigDecimal(quantity));
             
             if (taxRate != null) {
-                taxAmount = netAmount.multiply(taxRate).divide(new BigDecimal("100"), 2, BigDecimal.ROUND_HALF_UP);
+                taxAmount = netAmount.multiply(taxRate).divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP);
             } else {
                 taxAmount = BigDecimal.ZERO;
             }

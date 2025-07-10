@@ -12,12 +12,13 @@ import {
   PipelineCustomers,
   PipelineStatistics
 } from '../models/customer.models';
+import { ApiConfig } from '../config/api.config';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CustomerService {
-  private readonly API_URL = 'http://localhost:8080/api/customers';
+  private readonly API_URL = `${ApiConfig.API_BASE_URL}/customers`;
 
   constructor(private http: HttpClient) {}
 

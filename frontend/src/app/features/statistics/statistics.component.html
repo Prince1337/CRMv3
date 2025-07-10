@@ -1,0 +1,173 @@
+<div class="statistics-container">
+  <header class="statistics-header">
+    <h1>CRM Statistiken</h1>
+    <p>Administrator-Bereich</p>
+  </header>
+
+  <main class="statistics-main">
+    <!-- Loading State -->
+    <div *ngIf="loading" class="loading-container">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Lade Statistiken...</span>
+      </div>
+      <p class="mt-3">Lade Statistiken...</p>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="error" class="alert alert-danger" role="alert">
+      <h4 class="alert-heading">Fehler beim Laden der Statistiken</h4>
+      <p>{{ error }}</p>
+      <button class="btn btn-outline-danger" (click)="loadStatistics()">
+        Erneut versuchen
+      </button>
+    </div>
+
+    <!-- Statistics Content -->
+    <div *ngIf="!loading && !error && statistics" class="statistics-content">
+      <!-- Übersicht -->
+      <section class="overview-section">
+        <h2>Übersicht</h2>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <h3>Gesamtkunden</h3>
+            <div class="stat-value">{{ formatNumber(statistics.overview.totalCustomers) }}</div>
+            <div class="stat-description">Alle Kunden in der Datenbank</div>
+          </div>
+
+          <div class="stat-card">
+            <h3>Offene Leads</h3>
+            <div class="stat-value">{{ formatNumber(statistics.overview.openLeads) }}</div>
+            <div class="stat-description">Leads in der Pipeline</div>
+          </div>
+
+          <div class="stat-card">
+            <h3>Offene Aufgaben</h3>
+            <div class="stat-value">{{ formatNumber(statistics.overview.openTasks) }}</div>
+            <div class="stat-description">Noch zu erledigende Aufgaben</div>
+          </div>
+
+          <div class="stat-card">
+            <h3>Aktive Kunden</h3>
+            <div class="stat-value">{{ formatNumber(statistics.overview.activeCustomers) }}</div>
+            <div class="stat-description">Kunden mit Status "Aktiv"</div>
+          </div>
+
+          <div class="stat-card">
+            <h3>Potenziell</h3>
+            <div class="stat-value">{{ formatNumber(statistics.overview.potentialCustomers) }}</div>
+            <div class="stat-description">Kunden mit Status "Potenziell"</div>
+          </div>
+
+          <div class="stat-card">
+            <h3>Inaktiv</h3>
+            <div class="stat-value">{{ formatNumber(statistics.overview.inactiveCustomers) }}</div>
+            <div class="stat-description">Kunden mit Status "Inaktiv"</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Umsatz -->
+      <section class="revenue-section">
+        <h2>Umsatz & Leads</h2>
+        <div class="revenue-grid">
+          <div class="revenue-card">
+            <h3>Gesamtumsatz</h3>
+            <div class="stat-value">{{ formatCurrency(statistics.revenue.totalRevenue) }}</div>
+            <div class="stat-description">Gesamter Umsatz aus bezahlten Rechnungen</div>
+          </div>
+
+          <div class="revenue-card">
+            <h3>Monatlicher Umsatz</h3>
+            <div class="stat-value">{{ formatCurrency(statistics.revenue.monthlyRevenue) }}</div>
+            <div class="stat-description">Umsatz im aktuellen Monat</div>
+          </div>
+
+          <div class="revenue-card">
+            <h3>Gewonnene Leads</h3>
+            <div class="stat-value text-success">{{ formatNumber(statistics.revenue.wonLeads) }}</div>
+            <div class="stat-description">Erfolgreich gewonnene Leads</div>
+          </div>
+
+          <div class="revenue-card">
+            <h3>Verlorene Leads</h3>
+            <div class="stat-value text-danger">{{ formatNumber(statistics.revenue.lostLeads) }}</div>
+            <div class="stat-description">Verlorene Leads</div>
+          </div>
+
+          <div class="revenue-card">
+            <h3>Konversionsrate</h3>
+            <div class="stat-value">{{ formatPercentage(statistics.revenue.conversionRate) }}</div>
+            <div class="stat-description">Rate gewonnener vs. verlorener Leads</div>
+          </div>
+
+          <div class="revenue-card">
+            <h3>Gewonnener Umsatz</h3>
+            <div class="stat-value text-success">{{ formatCurrency(statistics.revenue.wonRevenue) }}</div>
+            <div class="stat-description">Umsatz aus gewonnenen Leads</div>
+          </div>
+        </div>
+
+        <!-- Monatliche Umsatzdaten -->
+        <div class="monthly-revenue-section">
+          <h3>Umsatz nach Monat</h3>
+          <div class="monthly-revenue-grid">
+            <div *ngFor="let monthData of statistics.revenue.monthlyRevenueData" class="month-card">
+              <h4>{{ formatMonth(monthData.month) }}</h4>
+              <div class="month-revenue">{{ formatCurrency(monthData.revenue) }}</div>
+              <div class="month-leads">
+                <span class="text-success">+{{ monthData.wonLeads }}</span>
+                <span class="text-danger">-{{ monthData.lostLeads }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Konversionsraten -->
+      <section class="conversion-section">
+        <h2>Konversionsraten</h2>
+        <div class="conversion-grid">
+          <div class="conversion-card">
+            <h3>Lead zu Kunde</h3>
+            <div class="stat-value">{{ formatPercentage(statistics.conversion.leadToCustomerRate) }}</div>
+            <div class="stat-description">Rate der Leads die zu Kunden werden</div>
+          </div>
+
+          <div class="conversion-card">
+            <h3>Angebot zu Gewonnen</h3>
+            <div class="stat-value">{{ formatPercentage(statistics.conversion.offerToWonRate) }}</div>
+            <div class="stat-description">Rate der Angebote die gewonnen werden</div>
+          </div>
+
+          <div class="conversion-card">
+            <h3>Gesamtkonversion</h3>
+            <div class="stat-value">{{ formatPercentage(statistics.conversion.overallConversionRate) }}</div>
+            <div class="stat-description">Gesamte Konversionsrate</div>
+          </div>
+        </div>
+
+        <!-- Konversion nach Quelle -->
+        <div class="conversion-details">
+          <h3>Konversion nach Quelle</h3>
+          <div class="conversion-source-grid">
+            <div *ngFor="let source of getConversionSources()" class="source-card">
+              <h4>{{ source.name }}</h4>
+              <div class="source-rate">{{ formatPercentage(source.rate) }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Konversion nach Status -->
+        <div class="conversion-details">
+          <h3>Konversion nach Status</h3>
+          <div class="conversion-status-grid">
+            <div *ngFor="let status of getConversionStatuses()" class="status-card">
+              <h4>{{ status.name }}</h4>
+              <div class="status-rate">{{ formatPercentage(status.rate) }}</div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+</div> 

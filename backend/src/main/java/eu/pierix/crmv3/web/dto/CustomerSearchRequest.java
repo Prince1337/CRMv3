@@ -37,12 +37,16 @@ public class CustomerSearchRequest {
     
     // Paginierung
     @Min(value = 0, message = "Seite muss >= 0 sein")
+    @Builder.Default
     private Integer page = 0;
     @Min(value = 1, message = "Größe muss >= 1 sein")
     @Max(value = 100, message = "Größe darf maximal 100 sein")
+    @Builder.Default
     private Integer size = 20;
     @Size(max = 50, message = "Sortierfeld darf maximal 50 Zeichen lang sein")
+    @Builder.Default
     private String sortBy = "createdAt";
     @Pattern(regexp = "^(asc|desc)$", flags = Pattern.Flag.CASE_INSENSITIVE, message = "Sortierrichtung muss 'asc' oder 'desc' sein")
+    @Builder.Default
     private String sortDirection = "desc";
 } 

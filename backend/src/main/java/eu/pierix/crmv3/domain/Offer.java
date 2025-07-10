@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -133,7 +134,7 @@ public class Offer {
         grossAmount = netAmount.add(taxAmount);
 
         if (discountPercentage != null && discountPercentage.compareTo(BigDecimal.ZERO) > 0) {
-            discountAmount = grossAmount.multiply(discountPercentage).divide(new BigDecimal("100"), 2, BigDecimal.ROUND_HALF_UP);
+            discountAmount = grossAmount.multiply(discountPercentage).divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP);
         } else {
             discountAmount = BigDecimal.ZERO;
         }

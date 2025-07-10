@@ -6,6 +6,7 @@ import eu.pierix.crmv3.domain.CustomerStatus;
 import eu.pierix.crmv3.web.dto.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -30,6 +31,7 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/customers")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*")
+@Slf4j
 public class CustomerController {
 
     private final CustomerService customerService;
@@ -42,13 +44,36 @@ public class CustomerController {
     @PostMapping
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<CustomerResponse> createCustomer(@Valid @RequestBody CustomerRequest request) {
-        Long currentUserId = getCurrentUserId();
-        
-        Customer customer = mapToCustomer(request);
-        Customer savedCustomer = customerService.createCustomer(customer, currentUserId);
-        
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(mapToCustomerResponse(savedCustomer));
+        try {
+            log.info("Erstelle neuen Kunden: {} {}", request.getFirstName(), request.getLastName());
+            
+            if (request == null) {
+                log.error("CustomerRequest ist null");
+                return ResponseEntity.badRequest().build();
+            }
+            
+            Long currentUserId = getCurrentUserId();
+            log.debug("Aktueller Benutzer ID: {}", currentUserId);
+            
+            Customer customer = mapToCustomer(request);
+            Customer savedCustomer = customerService.createCustomer(customer, currentUserId);
+            
+            CustomerResponse response = mapToCustomerResponse(savedCustomer);
+            log.info("Kunde erfolgreich erstellt: {} {} (ID: {})", 
+                    savedCustomer.getFirstName(), savedCustomer.getLastName(), savedCustomer.getId());
+            
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+            
+        } catch (IllegalArgumentException e) {
+            log.error("Validierungsfehler beim Erstellen des Kunden: {}", e.getMessage());
+            return ResponseEntity.badRequest().build();
+        } catch (RuntimeException e) {
+            log.error("Runtime-Fehler beim Erstellen des Kunden: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        } catch (Exception e) {
+            log.error("Unerwarteter Fehler beim Erstellen des Kunden: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     /**
@@ -58,9 +83,31 @@ public class CustomerController {
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<CustomerResponse> getCustomer(@PathVariable Long id) {
-        return customerService.findById(id)
-                .map(customer -> ResponseEntity.ok(mapToCustomerResponse(customer)))
-                .orElse(ResponseEntity.notFound().build());
+        try {
+            log.debug("Suche Kunde mit ID: {}", id);
+            
+            if (id == null) {
+                log.warn("Versuch Kunde mit null-ID zu finden");
+                return ResponseEntity.badRequest().build();
+            }
+            
+            Optional<Customer> customerOpt = customerService.findById(id);
+            
+            if (customerOpt.isPresent()) {
+                Customer customer = customerOpt.get();
+                CustomerResponse response = mapToCustomerResponse(customer);
+                log.debug("Kunde gefunden: {} {} (ID: {})", 
+                        customer.getFirstName(), customer.getLastName(), id);
+                return ResponseEntity.ok(response);
+            } else {
+                log.debug("Kunde mit ID {} nicht gefunden", id);
+                return ResponseEntity.notFound().build();
+            }
+            
+        } catch (Exception e) {
+            log.error("Fehler beim Suchen des Kunden mit ID {}: {}", id, e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     /**
@@ -70,20 +117,56 @@ public class CustomerController {
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<CustomerResponse> updateCustomer(@PathVariable Long id, @Valid @RequestBody CustomerRequest request) {
-        return customerService.findById(id)
-                .map(existingCustomer -> {
-                    Customer updatedCustomer = mapToCustomer(request);
-                    updatedCustomer.setId(id);
-                    
-                    // Behalte das lastContact-Feld bei, wenn es nicht explizit gesetzt wird
-                    if (request.getLastContact() == null) {
-                        updatedCustomer.setLastContact(existingCustomer.getLastContact());
-                    }
-                    
-                    Customer savedCustomer = customerService.updateCustomer(updatedCustomer);
-                    return ResponseEntity.ok(mapToCustomerResponse(savedCustomer));
-                })
-                .orElse(ResponseEntity.notFound().build());
+        try {
+            log.info("Aktualisiere Kunde mit ID: {}", id);
+            
+            if (id == null) {
+                log.error("Kunden-ID ist null");
+                return ResponseEntity.badRequest().build();
+            }
+            
+            if (request == null) {
+                log.error("CustomerRequest ist null");
+                return ResponseEntity.badRequest().build();
+            }
+            
+            Optional<Customer> existingCustomerOpt = customerService.findById(id);
+            
+            if (existingCustomerOpt.isPresent()) {
+                Customer existingCustomer = existingCustomerOpt.get();
+                log.debug("Bestehender Kunde gefunden: {} {} (ID: {})", 
+                        existingCustomer.getFirstName(), existingCustomer.getLastName(), id);
+                
+                Customer updatedCustomer = mapToCustomer(request);
+                updatedCustomer.setId(id);
+                
+                // Behalte das lastContact-Feld bei, wenn es nicht explizit gesetzt wird
+                if (request.getLastContact() == null) {
+                    updatedCustomer.setLastContact(existingCustomer.getLastContact());
+                }
+                
+                Customer savedCustomer = customerService.updateCustomer(updatedCustomer);
+                CustomerResponse response = mapToCustomerResponse(savedCustomer);
+                
+                log.info("Kunde erfolgreich aktualisiert: {} {} (ID: {})", 
+                        savedCustomer.getFirstName(), savedCustomer.getLastName(), id);
+                
+                return ResponseEntity.ok(response);
+            } else {
+                log.warn("Kunde mit ID {} nicht gefunden für Update", id);
+                return ResponseEntity.notFound().build();
+            }
+            
+        } catch (IllegalArgumentException e) {
+            log.error("Validierungsfehler beim Aktualisieren des Kunden: {}", e.getMessage());
+            return ResponseEntity.badRequest().build();
+        } catch (RuntimeException e) {
+            log.error("Runtime-Fehler beim Aktualisieren des Kunden: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        } catch (Exception e) {
+            log.error("Unerwarteter Fehler beim Aktualisieren des Kunden: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     /**
@@ -93,12 +176,34 @@ public class CustomerController {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteCustomer(@PathVariable Long id) {
-        if (!customerService.customerExists(id)) {
-            return ResponseEntity.notFound().build();
+        try {
+            log.info("Lösche Kunde mit ID: {}", id);
+            
+            if (id == null) {
+                log.error("Kunden-ID ist null");
+                return ResponseEntity.badRequest().build();
+            }
+            
+            if (!customerService.customerExists(id)) {
+                log.warn("Kunde mit ID {} existiert nicht für Löschung", id);
+                return ResponseEntity.notFound().build();
+            }
+            
+            customerService.deleteCustomer(id);
+            log.info("Kunde mit ID {} erfolgreich gelöscht", id);
+            
+            return ResponseEntity.noContent().build();
+            
+        } catch (IllegalArgumentException e) {
+            log.error("Validierungsfehler beim Löschen des Kunden: {}", e.getMessage());
+            return ResponseEntity.badRequest().build();
+        } catch (RuntimeException e) {
+            log.error("Runtime-Fehler beim Löschen des Kunden: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        } catch (Exception e) {
+            log.error("Unerwarteter Fehler beim Löschen des Kunden: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
-        
-        customerService.deleteCustomer(id);
-        return ResponseEntity.noContent().build();
     }
 
     // Suchmethoden
@@ -114,13 +219,28 @@ public class CustomerController {
             @RequestParam(defaultValue = "createdAt") String sortBy,
             @RequestParam(defaultValue = "desc") String sortDirection) {
         
-        Sort sort = Sort.by(Sort.Direction.fromString(sortDirection), sortBy);
-        Pageable pageable = PageRequest.of(page, size, sort);
-        
-        Page<Customer> customers = customerService.findAllCustomers(pageable);
-        Page<CustomerResponse> response = customers.map(this::mapToCustomerResponse);
-        
-        return ResponseEntity.ok(response);
+        try {
+            log.debug("Lade alle Kunden - Seite: {}, Größe: {}, Sortierung: {} {}", 
+                    page, size, sortBy, sortDirection);
+            
+            Sort sort = Sort.by(Sort.Direction.fromString(sortDirection), sortBy);
+            Pageable pageable = PageRequest.of(page, size, sort);
+            
+            Page<Customer> customers = customerService.findAllCustomers(pageable);
+            Page<CustomerResponse> response = customers.map(this::mapToCustomerResponse);
+            
+            log.debug("{} Kunden geladen (Seite {} von {})", 
+                    customers.getContent().size(), customers.getNumber(), customers.getTotalPages());
+            
+            return ResponseEntity.ok(response);
+            
+        } catch (IllegalArgumentException e) {
+            log.error("Validierungsfehler beim Laden der Kunden: {}", e.getMessage());
+            return ResponseEntity.badRequest().build();
+        } catch (Exception e) {
+            log.error("Fehler beim Laden der Kunden: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     /**
@@ -130,20 +250,41 @@ public class CustomerController {
     @PostMapping("/search")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<Page<CustomerResponse>> searchCustomers(@RequestBody CustomerSearchRequest request) {
-        Sort sort = Sort.by(Sort.Direction.fromString(request.getSortDirection()), request.getSortBy());
-        Pageable pageable = PageRequest.of(request.getPage(), request.getSize(), sort);
-        
-        Page<Customer> customers = customerService.searchCustomers(
-                request.getName(),
-                request.getEmail(),
-                request.getCompany(),
-                request.getCity(),
-                request.getStatus(),
-                pageable
-        );
-        
-        Page<CustomerResponse> response = customers.map(this::mapToCustomerResponse);
-        return ResponseEntity.ok(response);
+        try {
+            if (request == null) {
+                log.error("CustomerSearchRequest ist null");
+                return ResponseEntity.badRequest().build();
+            }
+            
+            log.debug("Erweiterte Kunden-Suche - Name: '{}', Email: '{}', Firma: '{}', Stadt: '{}', Status: '{}'", 
+                    request.getName(), request.getEmail(), request.getCompany(), request.getCity(), request.getStatus());
+            
+            Sort sort = Sort.by(Sort.Direction.fromString(request.getSortDirection()), request.getSortBy());
+            Pageable pageable = PageRequest.of(request.getPage(), request.getSize(), sort);
+            
+            Page<Customer> customers = customerService.searchCustomers(
+                    request.getName(),
+                    request.getEmail(),
+                    request.getCompany(),
+                    request.getCity(),
+                    request.getStatus(),
+                    pageable
+            );
+            
+            Page<CustomerResponse> response = customers.map(this::mapToCustomerResponse);
+            
+            log.debug("{} Kunden bei erweiterter Suche gefunden (Seite {} von {})", 
+                    customers.getContent().size(), customers.getNumber(), customers.getTotalPages());
+            
+            return ResponseEntity.ok(response);
+            
+        } catch (IllegalArgumentException e) {
+            log.error("Validierungsfehler bei erweiterter Kunden-Suche: {}", e.getMessage());
+            return ResponseEntity.badRequest().build();
+        } catch (Exception e) {
+            log.error("Fehler bei erweiterter Kunden-Suche: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     /**

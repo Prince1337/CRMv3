@@ -1,0 +1,1 @@
+import{L as i,f as t}from"./chunk-ZEIBLRTY.js";var a=(()=>{class e{constructor(){this.pipelineUpdateSource=new t,this.pipelineUpdate$=this.pipelineUpdateSource.asObservable()}notifyPipelineUpdate(){this.pipelineUpdateSource.next()}static{this.\u0275fac=function(r){return new(r||e)}}static{this.\u0275prov=i({token:e,factory:e.\u0275fac,providedIn:"root"})}}return e})();export{a};

@@ -1,15 +1,15 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from '../../../environments/environment';
 import { Offer, OfferRequest, OfferSearchRequest, OfferStatus } from '../models/offer.models';
+import { ApiConfig } from '../config/api.config';
 
 @Injectable({
   providedIn: 'root'
 })
 export class OfferService {
 
-  private apiUrl = `${environment.apiUrl}/offers`;
+  private apiUrl = `${ApiConfig.API_BASE_URL}/offers`;
 
   constructor(private http: HttpClient) { }
 

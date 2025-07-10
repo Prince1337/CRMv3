@@ -8,7 +8,6 @@ import eu.pierix.crmv3.web.dto.AuthenticationResponse;
 import eu.pierix.crmv3.web.dto.RegisterRequest;
 import eu.pierix.crmv3.web.dto.RegisterResponse;
 import eu.pierix.crmv3.web.dto.UserProfileResponse;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
