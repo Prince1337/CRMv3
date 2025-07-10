@@ -1,123 +1,168 @@
-<div class="register-container">
-  <div class="register-card">
-    <div class="register-header">
-      <h1>CRM v3</h1>
-      <p>Registrieren</p>
-    </div>
+<div class="min-vh-100 d-flex align-items-center justify-content-center bg-crm-light py-4">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-8 col-lg-6">
+        <div class="card shadow-lg border-0">
+          <div class="card-header bg-crm-deep-forest text-white text-center py-4">
+            <h1 class="h3 mb-0">🏢 CRM v3</h1>
+            <p class="mb-0 mt-2">Registrieren</p>
+          </div>
+          
+          <div class="card-body p-4">
+            <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="firstName" class="form-label fw-bold">
+                    Vorname
+                  </label>
+                  <input
+                    type="text"
+                    id="firstName"
+                    formControlName="firstName"
+                    class="form-control"
+                    [class.is-invalid]="isFieldInvalid('firstName')"
+                    placeholder="Vorname eingeben"
+                    autocomplete="given-name"
+                  />
+                  <div class="invalid-feedback" *ngIf="isFieldInvalid('firstName')">
+                    {{ getErrorMessage('firstName') }}
+                  </div>
+                </div>
 
-    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="register-form">
-      <div class="form-row">
-        <div class="form-group">
-          <label for="firstName">Vorname</label>
-          <input
-            type="text"
-            id="firstName"
-            formControlName="firstName"
-            [class.invalid]="isFieldInvalid('firstName')"
-            placeholder="Vorname eingeben"
-            autocomplete="given-name"
-          />
-          <div class="error-message" *ngIf="isFieldInvalid('firstName')">
-            {{ getErrorMessage('firstName') }}
+                <div class="col-md-6 mb-3">
+                  <label for="lastName" class="form-label fw-bold">
+                    Nachname
+                  </label>
+                  <input
+                    type="text"
+                    id="lastName"
+                    formControlName="lastName"
+                    class="form-control"
+                    [class.is-invalid]="isFieldInvalid('lastName')"
+                    placeholder="Nachname eingeben"
+                    autocomplete="family-name"
+                  />
+                  <div class="invalid-feedback" *ngIf="isFieldInvalid('lastName')">
+                    {{ getErrorMessage('lastName') }}
+                  </div>
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label for="username" class="form-label fw-bold">
+                  Benutzername
+                </label>
+                <input
+                  type="text"
+                  id="username"
+                  formControlName="username"
+                  class="form-control"
+                  [class.is-invalid]="isFieldInvalid('username')"
+                  placeholder="Benutzername eingeben"
+                  autocomplete="username"
+                />
+                <div class="invalid-feedback" *ngIf="isFieldInvalid('username')">
+                  {{ getErrorMessage('username') }}
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label for="email" class="form-label fw-bold">
+                  E-Mail
+                </label>
+                <input
+                  type="email"
+                  id="email"
+                  formControlName="email"
+                  class="form-control"
+                  [class.is-invalid]="isFieldInvalid('email')"
+                  placeholder="E-Mail-Adresse eingeben"
+                  autocomplete="email"
+                />
+                <div class="invalid-feedback" *ngIf="isFieldInvalid('email')">
+                  {{ getErrorMessage('email') }}
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="password" class="form-label fw-bold">
+                    Passwort
+                  </label>
+                  <input
+                    type="password"
+                    id="password"
+                    formControlName="password"
+                    class="form-control"
+                    [class.is-invalid]="isFieldInvalid('password')"
+                    placeholder="Passwort eingeben"
+                    autocomplete="new-password"
+                  />
+                  <div class="invalid-feedback" *ngIf="isFieldInvalid('password')">
+                    {{ getErrorMessage('password') }}
+                  </div>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                  <label for="confirmPassword" class="form-label fw-bold">
+                    Passwort bestätigen
+                  </label>
+                  <input
+                    type="password"
+                    id="confirmPassword"
+                    formControlName="confirmPassword"
+                    class="form-control"
+                    [class.is-invalid]="isFieldInvalid('confirmPassword')"
+                    placeholder="Passwort wiederholen"
+                    autocomplete="new-password"
+                  />
+                  <div class="invalid-feedback" *ngIf="isFieldInvalid('confirmPassword')">
+                    {{ getErrorMessage('confirmPassword') }}
+                  </div>
+                </div>
+              </div>
+
+              <div class="alert alert-danger" *ngIf="errorMessage">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                {{ errorMessage }}
+              </div>
+
+              <div class="alert alert-success" *ngIf="successMessage">
+                <i class="bi bi-check-circle me-2"></i>
+                {{ successMessage }}
+              </div>
+
+              <div class="d-grid">
+                <button
+                  type="submit"
+                  class="btn btn-primary btn-lg"
+                  [disabled]="isLoading || registerForm.invalid"
+                >
+                  <span *ngIf="!isLoading">
+                    <i class="bi bi-person-plus me-2"></i>
+                    Registrieren
+                  </span>
+                  <span *ngIf="isLoading">
+                    <div class="spinner-border spinner-border-sm me-2" role="status">
+                      <span class="visually-hidden">Lädt...</span>
+                    </div>
+                    Registrierung läuft...
+                  </span>
+                </button>
+              </div>
+            </form>
+          </div>
+          
+          <div class="card-footer bg-crm-light text-center py-3">
+            <p class="mb-0">
+              Bereits ein Konto? 
+              <a routerLink="/login" class="text-decoration-none fw-bold">
+                Anmelden
+              </a>
+            </p>
           </div>
         </div>
-
-        <div class="form-group">
-          <label for="lastName">Nachname</label>
-          <input
-            type="text"
-            id="lastName"
-            formControlName="lastName"
-            [class.invalid]="isFieldInvalid('lastName')"
-            placeholder="Nachname eingeben"
-            autocomplete="family-name"
-          />
-          <div class="error-message" *ngIf="isFieldInvalid('lastName')">
-            {{ getErrorMessage('lastName') }}
-          </div>
-        </div>
       </div>
-
-      <div class="form-group">
-        <label for="username">Benutzername</label>
-        <input
-          type="text"
-          id="username"
-          formControlName="username"
-          [class.invalid]="isFieldInvalid('username')"
-          placeholder="Benutzername eingeben"
-          autocomplete="username"
-        />
-        <div class="error-message" *ngIf="isFieldInvalid('username')">
-          {{ getErrorMessage('username') }}
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label for="email">E-Mail</label>
-        <input
-          type="email"
-          id="email"
-          formControlName="email"
-          [class.invalid]="isFieldInvalid('email')"
-          placeholder="E-Mail-Adresse eingeben"
-          autocomplete="email"
-        />
-        <div class="error-message" *ngIf="isFieldInvalid('email')">
-          {{ getErrorMessage('email') }}
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label for="password">Passwort</label>
-        <input
-          type="password"
-          id="password"
-          formControlName="password"
-          [class.invalid]="isFieldInvalid('password')"
-          placeholder="Passwort eingeben"
-          autocomplete="new-password"
-        />
-        <div class="error-message" *ngIf="isFieldInvalid('password')">
-          {{ getErrorMessage('password') }}
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label for="confirmPassword">Passwort bestätigen</label>
-        <input
-          type="password"
-          id="confirmPassword"
-          formControlName="confirmPassword"
-          [class.invalid]="isFieldInvalid('confirmPassword')"
-          placeholder="Passwort wiederholen"
-          autocomplete="new-password"
-        />
-        <div class="error-message" *ngIf="isFieldInvalid('confirmPassword')">
-          {{ getErrorMessage('confirmPassword') }}
-        </div>
-      </div>
-
-      <div class="error-message global-error" *ngIf="errorMessage">
-        {{ errorMessage }}
-      </div>
-
-      <div class="success-message" *ngIf="successMessage">
-        {{ successMessage }}
-      </div>
-
-      <button
-        type="submit"
-        [disabled]="isLoading || registerForm.invalid"
-        class="register-button"
-      >
-        <span *ngIf="!isLoading">Registrieren</span>
-        <span *ngIf="isLoading">Registrierung läuft...</span>
-      </button>
-    </form>
-
-    <div class="register-footer">
-      <p>Bereits ein Konto? <a routerLink="/login">Anmelden</a></p>
     </div>
   </div>
-</div> 
+</div>

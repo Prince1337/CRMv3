@@ -11,227 +11,7 @@ import { PipelineUpdateService } from '../../../core/services/pipeline-update.se
   selector: 'app-customer-list',
   standalone: true,
   imports: [CommonModule, FormsModule, RouterModule],
-  template: `
-    <div class="customer-list-container">
-      <header class="customer-header">
-        <div class="header-content">
-          <h1>Kundenverwaltung</h1>
-          <div class="header-actions">
-            <button (click)="navigateToPipeline()" class="btn-secondary">
-              📊 Pipeline
-            </button>
-            <button (click)="navigateToNewCustomer()" class="btn-primary">
-              <span>+</span> Neuer Kunde
-            </button>
-          </div>
-        </div>
-      </header>
-
-      <!-- Suchbereich -->
-      <div class="search-section">
-        <div class="search-form">
-          <div class="search-row">
-            <div class="search-field">
-              <label for="searchName">Name</label>
-              <input 
-                type="text" 
-                id="searchName" 
-                [(ngModel)]="searchRequest.name" 
-                placeholder="Name suchen..."
-                (keyup.enter)="searchCustomers()"
-              />
-            </div>
-            <div class="search-field">
-              <label for="searchEmail">E-Mail</label>
-              <input 
-                type="email" 
-                id="searchEmail" 
-                [(ngModel)]="searchRequest.email" 
-                placeholder="E-Mail suchen..."
-                (keyup.enter)="searchCustomers()"
-              />
-            </div>
-            <div class="search-field">
-              <label for="searchCompany">Firma</label>
-              <input 
-                type="text" 
-                id="searchCompany" 
-                [(ngModel)]="searchRequest.company" 
-                placeholder="Firma suchen..."
-                (keyup.enter)="searchCustomers()"
-              />
-            </div>
-          </div>
-          <div class="search-row">
-            <div class="search-field">
-              <label for="searchCity">Stadt</label>
-              <input 
-                type="text" 
-                id="searchCity" 
-                [(ngModel)]="searchRequest.city" 
-                placeholder="Stadt suchen..."
-                (keyup.enter)="searchCustomers()"
-              />
-            </div>
-            <div class="search-field">
-              <label for="searchStatus">Status</label>
-              <select id="searchStatus" [(ngModel)]="searchRequest.status">
-                <option value="">Alle Status</option>
-                <option [value]="CustomerStatus.NEW">Neu</option>
-                <option [value]="CustomerStatus.CONTACTED">Kontaktiert</option>
-                <option [value]="CustomerStatus.OFFER_CREATED">Angebot erstellt</option>
-                <option [value]="CustomerStatus.WON">Gewonnen</option>
-                <option [value]="CustomerStatus.LOST">Verloren</option>
-                <option [value]="CustomerStatus.POTENTIAL">Potenziell</option>
-                <option [value]="CustomerStatus.ACTIVE">Aktiv</option>
-                <option [value]="CustomerStatus.INACTIVE">Inaktiv</option>
-              </select>
-            </div>
-            <div class="search-field">
-              <label for="searchSource">Quelle</label>
-              <input 
-                type="text" 
-                id="searchSource" 
-                [(ngModel)]="searchRequest.source" 
-                placeholder="Quelle suchen..."
-                (keyup.enter)="searchCustomers()"
-              />
-            </div>
-          </div>
-          <div class="search-actions">
-            <button (click)="searchCustomers()" class="btn-primary">Suchen</button>
-            <button (click)="clearSearch()" class="btn-secondary">Zurücksetzen</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Ladeindikator -->
-      <div *ngIf="loading" class="loading">
-        <div class="spinner"></div>
-        <p>Lade Kunden...</p>
-      </div>
-
-      <!-- Kundenliste -->
-      <div *ngIf="!loading && sortedCustomers.length > 0" class="customers-table">
-        <table>
-          <thead>
-            <tr>
-              <th (click)="sortBy('firstName')" class="sortable">
-                Name
-                <span class="sort-arrow" [class]="getSortArrowClass('firstName')">
-                  {{ getSortArrow('firstName') }}
-                </span>
-              </th>
-              <th (click)="sortBy('email')" class="sortable">
-                E-Mail
-                <span class="sort-arrow" [class]="getSortArrowClass('email')">
-                  {{ getSortArrow('email') }}
-                </span>
-              </th>
-              <th (click)="sortBy('companyName')" class="sortable">
-                Firma
-                <span class="sort-arrow" [class]="getSortArrowClass('companyName')">
-                  {{ getSortArrow('companyName') }}
-                </span>
-              </th>
-              <th (click)="sortBy('city')" class="sortable">
-                Stadt
-                <span class="sort-arrow" [class]="getSortArrowClass('city')">
-                  {{ getSortArrow('city') }}
-                </span>
-              </th>
-              <th (click)="sortBy('status')" class="sortable">
-                Status
-                <span class="sort-arrow" [class]="getSortArrowClass('status')">
-                  {{ getSortArrow('status') }}
-                </span>
-              </th>
-              <th (click)="sortBy('createdAt')" class="sortable">
-                Erstellt
-                <span class="sort-arrow" [class]="getSortArrowClass('createdAt')">
-                  {{ getSortArrow('createdAt') }}
-                </span>
-              </th>
-              <th (click)="sortBy('lastContact')" class="sortable">
-                Letzter Kontakt
-                <span class="sort-arrow" [class]="getSortArrowClass('lastContact')">
-                  {{ getSortArrow('lastContact') }}
-                </span>
-              </th>
-              <th>Aktionen</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let customer of sortedCustomers">
-              <td>
-                <a [routerLink]="['/customers', customer.id]" class="customer-name">
-                  {{ customer.fullName }}
-                </a>
-              </td>
-              <td>{{ customer.email }}</td>
-              <td>{{ customer.companyName || '-' }}</td>
-              <td>{{ customer.city || '-' }}</td>
-              <td>
-                <span [class]="customerService.getStatusClass(customer.status)">
-                  {{ customer.statusDisplayName }}
-                </span>
-              </td>
-              <td>{{ customerService.formatDate(customer.createdAt) }}</td>
-              <td>{{ customer.lastContact ? customerService.formatDate(customer.lastContact) : 'Nie' }}</td>
-              <td class="actions">
-                <button (click)="navigateToCustomer(customer.id)" class="btn-icon" title="Anzeigen">
-                  👁️
-                </button>
-                <button (click)="navigateToEdit(customer.id)" class="btn-icon" title="Bearbeiten">
-                  ✏️
-                </button>
-                <button (click)="markAsContacted(customer.id)" class="btn-icon" title="Als kontaktiert markieren">
-                  📞
-                </button>
-                <button 
-                  *ngIf="authService.isAdmin()" 
-                  (click)="deleteCustomer(customer.id)" 
-                  class="btn-icon delete" 
-                  title="Löschen"
-                >
-                  🗑️
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <!-- Keine Kunden -->
-      <div *ngIf="!loading && sortedCustomers.length === 0" class="no-customers">
-        <p>Keine Kunden gefunden.</p>
-        <button (click)="navigateToNewCustomer()" class="btn-primary">Ersten Kunden erstellen</button>
-      </div>
-
-      <!-- Paginierung -->
-      <div *ngIf="!loading && totalPages > 1" class="pagination">
-        <button 
-          [disabled]="currentPage === 0" 
-          (click)="onPageChange(currentPage - 1)" 
-          class="btn-secondary"
-        >
-          Zurück
-        </button>
-        <span class="page-info">
-          Seite {{ currentPage + 1 }} von {{ totalPages }} 
-          ({{ totalElements }} Kunden insgesamt)
-        </span>
-        <button 
-          [disabled]="currentPage === totalPages - 1" 
-          (click)="onPageChange(currentPage + 1)" 
-          class="btn-secondary"
-        >
-          Weiter
-        </button>
-      </div>
-    </div>
-  `,
-  styleUrls: ['./customer-list.component.scss']
+  templateUrl: './customer-list.component.html'
 })
 export class CustomerListComponent implements OnInit {
   customers: Customer[] = [];
@@ -400,9 +180,20 @@ export class CustomerListComponent implements OnInit {
 
   getSortArrowClass(field: string): string {
     if (this.currentSortField !== field) {
-      return 'sort-neutral';
+      return 'bi-arrow-down-up';
     }
-    return this.currentSortDirection === 'asc' ? 'sort-asc' : 'sort-desc';
+    return this.currentSortDirection === 'asc' ? 'bi-arrow-up' : 'bi-arrow-down';
+  }
+
+  getPageNumbers(): number[] {
+    const pages: number[] = [];
+    const start = Math.max(0, this.currentPage - 2);
+    const end = Math.min(this.totalPages - 1, this.currentPage + 2);
+    
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+    return pages;
   }
 
   navigateToCustomer(id: number): void {
@@ -418,7 +209,7 @@ export class CustomerListComponent implements OnInit {
   }
 
   navigateToPipeline(): void {
-    this.router.navigate(['/pipeline']);
+    this.router.navigate(['/customers/pipeline']);
   }
 
   markAsContacted(id: number): void {

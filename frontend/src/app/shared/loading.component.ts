@@ -6,66 +6,52 @@ import { CommonModule } from '@angular/common';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="loading-container">
-      <div class="loading-spinner">
-        <svg class="spinner" viewBox="0 0 50 50">
-          <circle class="path" cx="25" cy="25" r="20" fill="none" stroke-width="5"></circle>
-        </svg>
-        <p>Lade...</p>
+    <div class="container-fluid min-vh-100 bg-light d-flex align-items-center justify-content-center">
+      <div class="text-center">
+        <div class="card shadow-sm border-0" style="max-width: 400px;">
+          <div class="card-body p-5">
+            <!-- Loading Spinner -->
+            <div class="mb-4">
+              <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+                <span class="visually-hidden">Lädt...</span>
+              </div>
+            </div>
+            
+            <!-- Loading Text -->
+            <h4 class="text-muted mb-2">Lade Daten...</h4>
+            <p class="text-muted mb-0">Bitte haben Sie einen Moment Geduld</p>
+            
+            <!-- Optional: Progress Bar -->
+            <div class="mt-4">
+              <div class="progress" style="height: 4px;">
+                <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary" 
+                     role="progressbar" 
+                     style="width: 100%">
+                </div>
+              </div>
+            </div>
+            
+            <!-- Loading Dots Animation -->
+            <div class="mt-3">
+              <span class="badge bg-primary me-1">●</span>
+              <span class="badge bg-primary me-1" style="animation-delay: 0.2s;">●</span>
+              <span class="badge bg-primary" style="animation-delay: 0.4s;">●</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Optional: Loading Tips -->
+        <div class="mt-4">
+          <div class="card border-0 bg-transparent">
+            <div class="card-body p-3">
+              <small class="text-muted">
+                💡 Tipp: Während des Ladens können Sie sich bereits mit der Anwendung vertraut machen
+              </small>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
-  `,
-  styles: [`
-    .loading-container {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      background-color: #f5f5f5;
-    }
-
-    .loading-spinner {
-      text-align: center;
-    }
-
-    .spinner {
-      width: 50px;
-      height: 50px;
-      animation: rotate 2s linear infinite;
-    }
-
-    .path {
-      stroke: #007bff;
-      stroke-linecap: round;
-      animation: dash 1.5s ease-in-out infinite;
-    }
-
-    @keyframes rotate {
-      100% {
-        transform: rotate(360deg);
-      }
-    }
-
-    @keyframes dash {
-      0% {
-        stroke-dasharray: 1, 150;
-        stroke-dashoffset: 0;
-      }
-      50% {
-        stroke-dasharray: 90, 150;
-        stroke-dashoffset: -35;
-      }
-      100% {
-        stroke-dasharray: 90, 150;
-        stroke-dashoffset: -124;
-      }
-    }
-
-    p {
-      margin-top: 1rem;
-      color: #666;
-      font-size: 1.1rem;
-    }
-  `]
+  `
 })
 export class LoadingComponent {} 

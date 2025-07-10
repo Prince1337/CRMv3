@@ -8,48 +8,7 @@ import { AuthService } from './core/services/auth.service';
   selector: 'app-root',
   standalone: true,
   imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive],
-  template: `
-    <div class="app-container">
-      <!-- Navigation -->
-      <nav class="nav-container" *ngIf="authService.isAuthenticated()">
-        <div class="nav-content">
-          <a routerLink="/dashboard" class="nav-brand">
-            🏢 CRM v3
-          </a>
-          
-          <div class="nav-menu">
-            <a routerLink="/dashboard" routerLinkActive="active" class="nav-link">
-              📊 Dashboard
-            </a>
-            <a routerLink="/customers" routerLinkActive="active" class="nav-link">
-              👥 Kunden
-            </a>
-            <a routerLink="/customers/pipeline" routerLinkActive="active" class="nav-link">
-              📈 Pipeline
-            </a>
-            <a routerLink="/statistics" routerLinkActive="active" class="nav-link">
-              📊 Statistiken
-            </a>
-            
-            <div class="nav-user">
-              <div class="user-info">
-                <div class="user-name">{{ authService.getCurrentUser()?.firstName }} {{ authService.getCurrentUser()?.lastName }}</div>
-                <div class="user-role">{{ authService.getCurrentUser()?.role }}</div>
-              </div>
-              <button (click)="logout()" class="logout-btn">
-                🚪 Logout
-              </button>
-            </div>
-          </div>
-        </div>
-      </nav>
-
-      <!-- Main Content -->
-      <main class="main-content">
-        <router-outlet></router-outlet>
-      </main>
-    </div>
-  `,
+  templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit, OnDestroy {
@@ -100,5 +59,26 @@ export class AppComponent implements OnInit, OnDestroy {
     
     // Zur Login-Seite navigieren
     this.router.navigate(['/login']);
+  }
+
+  getRoleDisplayName(): string {
+    const user = this.authService.getCurrentUser();
+    if (!user?.role) return 'Unbekannt';
+    
+    switch (user.role) {
+      case 'ROLE_ADMIN':
+        return 'Administrator';
+      case 'ROLE_USER':
+        return 'Benutzer';
+      default:
+        return user.role;
+    }
+  }
+
+  getInitials(): string {
+    const user = this.authService.getCurrentUser();
+    if (!user?.firstName || !user?.lastName) return '?';
+    
+    return (user.firstName.charAt(0) + user.lastName.charAt(0)).toUpperCase();
   }
 }

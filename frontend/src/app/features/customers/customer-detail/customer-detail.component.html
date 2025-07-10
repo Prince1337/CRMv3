@@ -1,76 +1,259 @@
-<div class="customer-detail-container" *ngIf="customer$ | async as customer; else loadingOrError">
-  <button class="btn-secondary back-btn" (click)="goBack()">← Zurück zur Liste</button>
-  <div class="detail-header">
-    <h1>{{ customer.fullName }}</h1>
-    <span class="status-badge" [class]="customerService.getStatusClass(customer.status)">
-      {{ customer.statusDisplayName }}
-    </span>
-  </div>
-  <div class="detail-content">
-    <div class="detail-section">
-      <h2>Kontaktdaten</h2>
-      <p><strong>E-Mail:</strong> {{ customer.email }}</p>
-      <p *ngIf="customer.phone"><strong>Telefon:</strong> {{ customer.phone }}</p>
-      <p *ngIf="customer.mobile"><strong>Mobil:</strong> {{ customer.mobile }}</p>
-      <p *ngIf="customer.website"><strong>Website:</strong> <a [href]="customer.website" target="_blank">{{ customer.website }}</a></p>
+<div class="container-fluid bg-light min-vh-100" *ngIf="customer$ | async as customer; else loadingOrError">
+  <!-- Header -->
+  <div class="container-fluid py-4">
+    <div class="row mb-4">
+      <div class="col-12">
+        <div class="card shadow-sm">
+          <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center">
+              <button class="btn btn-outline-secondary me-3" (click)="goBack()">
+                ← Zurück zur Liste
+              </button>
+              <h1 class="h3 mb-0">{{ customer.fullName }}</h1>
+            </div>
+            <div class="d-flex align-items-center">
+              <span class="badge fs-6 me-3" [class]="customerService.getStatusClass(customer.status)">
+                {{ customer.statusDisplayName }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-    <div class="detail-section">
-      <h2>Firma & Position</h2>
-      <p *ngIf="customer.companyName"><strong>Firma:</strong> {{ customer.companyName }}</p>
-      <p *ngIf="customer.position"><strong>Position:</strong> {{ customer.position }}</p>
-      <p *ngIf="customer.department"><strong>Abteilung:</strong> {{ customer.department }}</p>
+
+    <div class="row">
+      <!-- Hauptinhalt -->
+      <div class="col-lg-8">
+        <div class="row">
+          <!-- Kontaktdaten -->
+          <div class="col-md-6 mb-4">
+            <div class="card shadow-sm h-100">
+              <div class="card-header bg-light">
+                <h5 class="mb-0">
+                  📞 Kontaktdaten
+                </h5>
+              </div>
+              <div class="card-body">
+                <div class="mb-3">
+                  <strong>E-Mail:</strong>
+                  <div>{{ customer.email }}</div>
+                </div>
+                <div class="mb-3" *ngIf="customer.phone">
+                  <strong>Telefon:</strong>
+                  <div>{{ customer.phone }}</div>
+                </div>
+                <div class="mb-3" *ngIf="customer.mobile">
+                  <strong>Mobil:</strong>
+                  <div>{{ customer.mobile }}</div>
+                </div>
+                <div class="mb-3" *ngIf="customer.website">
+                  <strong>Website:</strong>
+                  <div>
+                    <a [href]="customer.website" target="_blank" class="text-decoration-none">
+                      {{ customer.website }}
+                      ↗️
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Firma & Position -->
+          <div class="col-md-6 mb-4">
+            <div class="card shadow-sm h-100">
+              <div class="card-header bg-light">
+                <h5 class="mb-0">
+                  🏢 Firma & Position
+                </h5>
+              </div>
+              <div class="card-body">
+                <div class="mb-3" *ngIf="customer.companyName">
+                  <strong>Firma:</strong>
+                  <div>{{ customer.companyName }}</div>
+                </div>
+                <div class="mb-3" *ngIf="customer.position">
+                  <strong>Position:</strong>
+                  <div>{{ customer.position }}</div>
+                </div>
+                <div class="mb-3" *ngIf="customer.department">
+                  <strong>Abteilung:</strong>
+                  <div>{{ customer.department }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Adresse -->
+          <div class="col-md-6 mb-4">
+            <div class="card shadow-sm h-100">
+              <div class="card-header bg-light">
+                <h5 class="mb-0">
+                  📍 Adresse
+                </h5>
+              </div>
+              <div class="card-body">
+                <div *ngIf="customer.fullAddress; else addressDetails">
+                  {{ customer.fullAddress }}
+                </div>
+                <ng-template #addressDetails>
+                  <div class="mb-2" *ngIf="customer.street || customer.houseNumber">
+                    {{ customer.street }} {{ customer.houseNumber }}
+                  </div>
+                  <div class="mb-2" *ngIf="customer.postalCode || customer.city">
+                    {{ customer.postalCode }} {{ customer.city }}
+                  </div>
+                  <div class="mb-2" *ngIf="customer.country">
+                    {{ customer.country }}
+                  </div>
+                </ng-template>
+              </div>
+            </div>
+          </div>
+
+          <!-- Weitere Informationen -->
+          <div class="col-md-6 mb-4">
+            <div class="card shadow-sm h-100">
+              <div class="card-header bg-light">
+                <h5 class="mb-0">
+                  ℹ️ Weitere Informationen
+                </h5>
+              </div>
+              <div class="card-body">
+                <div class="mb-3" *ngIf="customer.source">
+                  <strong>Quelle:</strong>
+                  <div>{{ customer.source }}</div>
+                </div>
+                <div class="mb-3" *ngIf="customer.tags">
+                  <strong>Tags:</strong>
+                  <div>{{ customer.tags }}</div>
+                </div>
+                <div class="mb-3" *ngIf="customer.notes">
+                  <strong>Notizen:</strong>
+                  <div>{{ customer.notes }}</div>
+                </div>
+                <div class="mb-3" *ngIf="customer.internalNotes">
+                  <strong>Interne Notizen:</strong>
+                  <div>{{ customer.internalNotes }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <div class="col-lg-4">
+        <!-- Meta-Informationen -->
+        <div class="card shadow-sm mb-4">
+          <div class="card-header bg-light">
+            <h5 class="mb-0">
+              ⏰ Meta-Informationen
+            </h5>
+          </div>
+          <div class="card-body">
+            <div class="mb-3">
+              <strong>Erstellt am:</strong>
+              <div>{{ customerService.formatDate(customer.createdAt) }}</div>
+            </div>
+            <div class="mb-3">
+              <strong>Letzte Änderung:</strong>
+              <div>{{ customerService.formatDate(customer.updatedAt) }}</div>
+            </div>
+            <div class="mb-3" *ngIf="customer.lastContact">
+              <strong>Letzter Kontakt:</strong>
+              <div>{{ customerService.formatDate(customer.lastContact) }}</div>
+            </div>
+            <div class="mb-3">
+              <strong>Erstellt von:</strong>
+              <div>{{ customer.createdByFullName }}</div>
+            </div>
+            <div class="mb-3" *ngIf="customer.assignedToFullName">
+              <strong>Zugewiesen an:</strong>
+              <div>{{ customer.assignedToFullName }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Aktionen -->
+        <div class="card shadow-sm">
+          <div class="card-header bg-light">
+            <h5 class="mb-0">
+              ⚙️ Aktionen
+            </h5>
+          </div>
+          <div class="card-body">
+            <div class="d-grid gap-2">
+              <button class="btn btn-primary" (click)="editCustomer(customer.id)">
+                ✏️ Bearbeiten
+              </button>
+              <button class="btn btn-outline-danger" (click)="confirmDelete(customer)">
+                🗑️ Löschen
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-    <div class="detail-section">
-      <h2>Adresse</h2>
-      <p *ngIf="customer.fullAddress">{{ customer.fullAddress }}</p>
-      <ng-container *ngIf="!customer.fullAddress">
-        <p *ngIf="customer.street || customer.houseNumber">{{ customer.street }} {{ customer.houseNumber }}</p>
-        <p *ngIf="customer.postalCode || customer.city">{{ customer.postalCode }} {{ customer.city }}</p>
-        <p *ngIf="customer.country">{{ customer.country }}</p>
-      </ng-container>
-    </div>
-    <div class="detail-section">
-      <h2>Weitere Informationen</h2>
-      <p *ngIf="customer.source"><strong>Quelle:</strong> {{ customer.source }}</p>
-      <p *ngIf="customer.tags"><strong>Tags:</strong> {{ customer.tags }}</p>
-      <p *ngIf="customer.notes"><strong>Notizen:</strong> {{ customer.notes }}</p>
-      <p *ngIf="customer.internalNotes"><strong>Interne Notizen:</strong> {{ customer.internalNotes }}</p>
-    </div>
-    <div class="detail-section meta">
-      <p><strong>Erstellt am:</strong> {{ customerService.formatDate(customer.createdAt) }}</p>
-      <p><strong>Letzte Änderung:</strong> {{ customerService.formatDate(customer.updatedAt) }}</p>
-      <p *ngIf="customer.lastContact"><strong>Letzter Kontakt:</strong> {{ customerService.formatDate(customer.lastContact) }}</p>
-      <p><strong>Erstellt von:</strong> {{ customer.createdByFullName }}</p>
-      <p *ngIf="customer.assignedToFullName"><strong>Zugewiesen an:</strong> {{ customer.assignedToFullName }}</p>
-    </div>
-  </div>
-  <div class="actions">
-    <button class="btn-primary" (click)="editCustomer(customer.id)">Bearbeiten</button>
-    <button class="btn-danger" (click)="confirmDelete(customer)">Löschen</button>
   </div>
 </div>
 
 <!-- Bestätigungsdialog -->
-<div class="modal-overlay" *ngIf="showDeleteConfirm" (click)="cancelDelete()">
-  <div class="modal-content" (click)="$event.stopPropagation()">
-    <h3>Kunde löschen</h3>
-    <p>Möchten Sie den Kunden <strong>{{ customerToDelete?.fullName }}</strong> wirklich löschen?</p>
-    <p class="warning-text">Diese Aktion kann nicht rückgängig gemacht werden.</p>
-    <div class="modal-actions">
-      <button class="btn-secondary" (click)="cancelDelete()">Abbrechen</button>
-      <button class="btn-danger" (click)="deleteCustomer()" [disabled]="deleting">
-        {{ deleting ? 'Lösche...' : 'Löschen' }}
-      </button>
+<div class="modal fade" [class.show]="showDeleteConfirm" [style.display]="showDeleteConfirm ? 'block' : 'none'" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="bi bi-exclamation-triangle text-warning me-2"></i>
+          Kunde löschen
+        </h5>
+        <button type="button" class="btn-close" (click)="cancelDelete()"></button>
+      </div>
+      <div class="modal-body">
+        <p>Möchten Sie den Kunden <strong>{{ customerToDelete?.fullName }}</strong> wirklich löschen?</p>
+        <div class="alert alert-warning">
+          <i class="bi bi-exclamation-triangle me-2"></i>
+          Diese Aktion kann nicht rückgängig gemacht werden.
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="cancelDelete()">
+          Abbrechen
+        </button>
+        <button type="button" class="btn btn-danger" (click)="deleteCustomer()" [disabled]="deleting">
+          <span *ngIf="!deleting">
+            <i class="bi bi-trash me-2"></i>
+            Löschen
+          </span>
+          <span *ngIf="deleting">
+            <div class="spinner-border spinner-border-sm me-2" role="status">
+              <span class="visually-hidden">Lädt...</span>
+            </div>
+            Lösche...
+          </span>
+        </button>
+      </div>
     </div>
   </div>
 </div>
 
 <ng-template #loadingOrError>
-  <div *ngIf="loading" class="loading">
-    <div class="spinner"></div>
-    <p>Lade Kundendaten...</p>
-  </div>
-  <div *ngIf="error" class="error-message">
-    {{ error }}
+  <div class="container-fluid bg-light min-vh-100 d-flex align-items-center justify-content-center">
+    <div *ngIf="loading" class="text-center">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Lädt...</span>
+      </div>
+      <p class="mt-3 text-muted">Lade Kundendaten...</p>
+    </div>
+    <div *ngIf="error" class="text-center">
+      <div class="alert alert-danger">
+        <i class="bi bi-exclamation-triangle me-2"></i>
+        {{ error }}
+      </div>
+      <button class="btn btn-primary" (click)="goBack()">
+        <i class="bi bi-arrow-left me-2"></i>
+        Zurück zur Liste
+      </button>
+    </div>
   </div>
 </ng-template> 

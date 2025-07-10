@@ -1,2 +1,80 @@
-<!-- crm-v3 Frontend -->
-<router-outlet></router-outlet>
+<div class="min-vh-100 bg-light">
+  <!-- Navigation -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-crm-deep-forest shadow" *ngIf="authService.isAuthenticated()">
+    <div class="container-fluid">
+      <!-- Brand -->
+      <a routerLink="/dashboard" class="navbar-brand fw-bold">
+        🏢 CRM v3
+      </a>
+
+      <!-- Mobile Toggle -->
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
+              aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <!-- Navigation Menu -->
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav me-auto">
+          <li class="nav-item">
+            <a routerLink="/dashboard" routerLinkActive="active" class="nav-link">
+              📊 Dashboard
+            </a>
+          </li>
+          <li class="nav-item">
+            <a routerLink="/customers" routerLinkActive="active" class="nav-link">
+              👥 Kunden
+            </a>
+          </li>
+          <li class="nav-item">
+            <a routerLink="/offers" routerLinkActive="active" class="nav-link">
+              📄 Angebote
+            </a>
+          </li>
+          <li class="nav-item">
+            <a routerLink="/pipeline" routerLinkActive="active" class="nav-link">
+              📈 Pipeline
+            </a>
+          </li>
+          <li class="nav-item" *ngIf="authService.isAdmin()">
+            <a routerLink="/statistics" routerLinkActive="active" class="nav-link">
+              📊 Statistiken
+            </a>
+          </li>
+        </ul>
+
+        <!-- User Info & Logout -->
+        <div class="navbar-nav ms-auto">
+          <div class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" 
+               data-bs-toggle="dropdown" aria-expanded="false">
+              <div class="me-2 text-end">
+                <div class="small fw-bold">{{ authService.getCurrentUser()?.firstName }} {{ authService.getCurrentUser()?.lastName }}</div>
+                <div class="small text-light">{{ getRoleDisplayName() }}</div>
+              </div>
+              <div class="bg-crm-light rounded-circle d-flex align-items-center justify-content-center" 
+                   style="width: 32px; height: 32px;">
+                <span class="text-primary fw-bold">{{ getInitials() }}</span>
+              </div>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><h6 class="dropdown-header">👤 Benutzer</h6></li>
+              <li><a class="dropdown-item" routerLink="/profile">
+                👤 Profil
+              </a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item text-danger" (click)="logout()" href="#">
+                🚪 Abmelden
+              </a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="container-fluid p-0">
+    <router-outlet></router-outlet>
+  </main>
+</div>

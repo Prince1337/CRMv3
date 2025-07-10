@@ -11,8 +11,7 @@ import { Subscription } from 'rxjs';
   selector: 'app-pipeline',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './pipeline.component.html',
-  styleUrls: ['./pipeline.component.scss']
+  templateUrl: './pipeline.component.html'
 })
 export class PipelineComponent implements OnInit, OnDestroy {
   pipelineCustomers: PipelineCustomers = {};
@@ -304,7 +303,7 @@ export class PipelineComponent implements OnInit, OnDestroy {
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: Event): void {
     const target = event.target as HTMLElement;
-    if (this.showStatusModal && target.classList.contains('modal-overlay')) {
+    if (this.showStatusModal && target.classList.contains('modal-backdrop')) {
       this.closeStatusModal();
     }
   }

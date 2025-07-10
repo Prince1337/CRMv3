@@ -1,23 +1,46 @@
-<div class="unauthorized-container">
-  <div class="unauthorized-card">
-    <div class="unauthorized-icon">
-      <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <circle cx="12" cy="12" r="10"/>
-        <line x1="15" y1="9" x2="9" y2="15"/>
-        <line x1="9" y1="9" x2="15" y2="15"/>
-      </svg>
-    </div>
-    
-    <h1>Zugriff verweigert</h1>
-    <p>Sie haben keine Berechtigung, diese Seite zu besuchen.</p>
-    
-    <div class="action-buttons">
-      <button (click)="goBack()" class="btn-secondary">
-        Zurück
-      </button>
-      <button (click)="goToDashboard()" class="btn-primary">
-        Zum Dashboard
-      </button>
+<div class="min-vh-100 d-flex align-items-center justify-content-center bg-crm-light">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-6 col-lg-4">
+        <div class="card shadow-lg border-0 text-center">
+          <div class="card-header bg-crm-deep-forest text-white py-4">
+            <div class="display-1 mb-3">🚫</div>
+            <h1 class="h3 mb-0">Zugriff verweigert</h1>
+          </div>
+          
+          <div class="card-body p-4">
+            <div class="mb-4">
+              <div class="text-muted mb-3">
+                <i class="bi bi-shield-exclamation display-4 text-warning"></i>
+              </div>
+              <p class="lead text-muted">
+                Sie haben keine Berechtigung, diese Seite zu besuchen.
+              </p>
+              <p class="text-muted small">
+                Bitte kontaktieren Sie Ihren Administrator, falls Sie glauben, dass dies ein Fehler ist.
+              </p>
+            </div>
+
+            <div class="d-grid gap-2">
+              <button (click)="goBack()" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-2"></i>
+                Zurück
+              </button>
+              <button (click)="goToDashboard()" class="btn btn-primary">
+                <i class="bi bi-house me-2"></i>
+                Zum Dashboard
+              </button>
+            </div>
+          </div>
+          
+          <div class="card-footer bg-crm-light py-3">
+            <p class="mb-0 small text-muted">
+              <i class="bi bi-info-circle me-1"></i>
+              Fehler-Code: 403 - Forbidden
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div> 

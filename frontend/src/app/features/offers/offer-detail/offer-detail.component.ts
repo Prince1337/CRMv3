@@ -9,147 +9,182 @@ import { Offer, OfferStatus } from '../../../core/models/offer.models';
   selector: 'app-offer-detail',
   standalone: true,
   imports: [CommonModule, RouterModule],
-  styleUrls: ['./offer-detail.component.scss'],
   template: `
-    <div class="offer-detail-container">
+    <div class="container-fluid min-vh-100 bg-light">
       <!-- Loading State -->
-      <div *ngIf="isLoading" class="loading-state">
-        <div class="loading-spinner"></div>
-        <p>Lade Angebotsdetails...</p>
+      <div *ngIf="isLoading" class="d-flex justify-content-center align-items-center min-vh-100">
+        <div class="text-center">
+          <div class="spinner-border text-primary mb-3" role="status">
+            <span class="visually-hidden">Lädt...</span>
+          </div>
+          <p class="text-muted">Lade Angebotsdetails...</p>
+        </div>
       </div>
 
       <!-- Error State -->
-      <div *ngIf="error" class="error-state">
-        <div class="error-icon">⚠</div>
-        <h3>Fehler beim Laden</h3>
-        <p>{{ error }}</p>
-        <button (click)="goBack()" class="back-button">Zurück zur Übersicht</button>
+      <div *ngIf="error && !isLoading" class="container py-5">
+        <div class="row justify-content-center">
+          <div class="col-md-8">
+            <div class="card shadow-sm">
+              <div class="card-body text-center">
+                <div class="display-1 text-danger mb-3">⚠️</div>
+                <h3 class="text-danger mb-3">Fehler beim Laden</h3>
+                <p class="text-muted mb-4">{{ error }}</p>
+                <button (click)="goBack()" class="btn btn-outline-secondary">
+                  ← Zurück zur Übersicht
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Content -->
-      <div *ngIf="offer && !isLoading" class="offer-content">
+      <div *ngIf="offer && !isLoading" class="container-fluid py-4">
         <!-- Header -->
-        <div class="detail-header">
-          <div class="header-left">
-            <button (click)="goBack()" class="back-button">
-              ← Zurück
-            </button>
-            <div class="offer-info">
-              <h1>{{ offer.title }}</h1>
-              <p class="offer-number">{{ offer.offerNumber }}</p>
+        <div class="row mb-4">
+          <div class="col-12">
+            <div class="card shadow-sm">
+              <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                  <button (click)="goBack()" class="btn btn-outline-secondary me-3">
+                    ← Zurück
+                  </button>
+                  <div>
+                    <h1 class="h3 mb-1">{{ offer.title }}</h1>
+                    <p class="text-muted mb-0">{{ offer.offerNumber }}</p>
+                  </div>
+                </div>
+                <div class="d-flex gap-2">
+                  <button 
+                    *ngIf="offer.status === 'DRAFT'"
+                    (click)="markAsSent()" 
+                    class="btn btn-success">
+                    📤 Versenden
+                  </button>
+                  <button 
+                    *ngIf="offer.status === 'SENT'"
+                    (click)="markAsPaid()" 
+                    class="btn btn-primary">
+                    💰 Als bezahlt markieren
+                  </button>
+                  <button 
+                    (click)="downloadPdf()" 
+                    class="btn btn-outline-primary">
+                    📄 PDF
+                  </button>
+                  <button 
+                    [routerLink]="['/offers', offer.id, 'edit']" 
+                    class="btn btn-outline-secondary">
+                    ✏️ Bearbeiten
+                  </button>
+                </div>
+              </div>
             </div>
-          </div>
-          <div class="header-actions">
-            <button 
-              *ngIf="offer.status === 'DRAFT'"
-              (click)="markAsSent()" 
-              class="action-button send-button">
-              Versenden
-            </button>
-            <button 
-              *ngIf="offer.status === 'SENT'"
-              (click)="markAsPaid()" 
-              class="action-button paid-button">
-              Als bezahlt markieren
-            </button>
-            <button 
-              (click)="downloadPdf()" 
-              class="action-button pdf-button">
-              📄 PDF herunterladen
-            </button>
-            <button 
-              [routerLink]="['/offers', offer.id, 'edit']" 
-              class="action-button edit-button">
-              Bearbeiten
-            </button>
           </div>
         </div>
 
-        <!-- Status Badge -->
-        <div class="status-section">
-          <span [class]="getStatusBadgeClass(offer.status)" class="status-badge">
-            {{ offer.statusDisplayName }}
-          </span>
-          <div class="status-info">
-            <p *ngIf="offer.createdAt">
-              <strong>Erstellt:</strong> {{ offer.createdAt | date:'medium' }}
-            </p>
-            <p *ngIf="offer.sentAt">
-              <strong>Versendet:</strong> {{ offer.sentAt | date:'medium' }}
-            </p>
-            <p *ngIf="offer.paidAt">
-              <strong>Bezahlt:</strong> {{ offer.paidAt | date:'medium' }}
-            </p>
-            <p *ngIf="offer.validUntil">
-              <strong>Gültig bis:</strong> {{ offer.validUntil | date:'mediumDate' }}
-            </p>
+        <!-- Status and Info -->
+        <div class="row mb-4">
+          <div class="col-12">
+            <div class="card shadow-sm">
+              <div class="card-body">
+                <div class="row align-items-center">
+                  <div class="col-md-6">
+                    <span [class]="getStatusBadgeClass(offer.status)" class="badge fs-6 px-3 py-2">
+                      {{ offer.statusDisplayName }}
+                    </span>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="row text-muted small">
+                      <div class="col-6">
+                        <strong>Erstellt:</strong><br>
+                        {{ offer.createdAt | date:'medium' }}
+                      </div>
+                      <div class="col-6" *ngIf="offer.sentAt">
+                        <strong>Versendet:</strong><br>
+                        {{ offer.sentAt | date:'medium' }}
+                      </div>
+                      <div class="col-6" *ngIf="offer.paidAt">
+                        <strong>Bezahlt:</strong><br>
+                        {{ offer.paidAt | date:'medium' }}
+                      </div>
+                      <div class="col-6" *ngIf="offer.validUntil">
+                        <strong>Gültig bis:</strong><br>
+                        {{ offer.validUntil | date:'mediumDate' }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
         <!-- Main Content -->
-        <div class="detail-grid">
+        <div class="row">
           <!-- Left Column -->
-          <div class="detail-left">
+          <div class="col-lg-8 mb-4">
             <!-- Customer Information -->
-            <div class="detail-section">
-              <h2>Kunde</h2>
-              <div class="customer-info">
-                <p><strong>Name:</strong> {{ offer.customerName }}</p>
-                <p><strong>Kunden-ID:</strong> {{ offer.customerId }}</p>
+            <div class="card shadow-sm mb-4">
+              <div class="card-header bg-white">
+                <h3 class="h5 mb-0">👤 Kunde</h3>
               </div>
-            </div>
-
-            <!-- Offer Details -->
-            <div class="detail-section">
-              <h2>Angebotsdetails</h2>
-              <div class="offer-details">
-                <p *ngIf="offer.description">
-                  <strong>Beschreibung:</strong><br>
-                  {{ offer.description }}
-                </p>
-                <p *ngIf="offer.discountPercentage && offer.discountPercentage > 0">
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-md-6">
+                    <p><strong>Name:</strong> {{ offer.customerName }}</p>
+                  </div>
+                  <div class="col-md-6">
+                    <p><strong>Kunden-ID:</strong> {{ offer.customerId }}</p>
+                  </div>
+                </div>
+                <div *ngIf="offer.description" class="mt-3">
+                  <strong>Beschreibung:</strong>
+                  <p class="text-muted mb-0">{{ offer.description }}</p>
+                </div>
+                <div *ngIf="offer.discountPercentage && offer.discountPercentage > 0" class="mt-2">
                   <strong>Rabatt:</strong> {{ offer.discountPercentage }}%
-                </p>
+                </div>
               </div>
             </div>
 
             <!-- Items -->
-            <div class="detail-section">
-              <h2>Positionen</h2>
-              <div class="items-list">
-                <div *ngFor="let item of offer.items; let i = index" class="item-card">
-                  <div class="item-header">
-                    <h3>Position {{ i + 1 }}</h3>
+            <div class="card shadow-sm">
+              <div class="card-header bg-white">
+                <h3 class="h5 mb-0">📋 Positionen</h3>
+              </div>
+              <div class="card-body">
+                <div *ngFor="let item of offer.items; let i = index" class="border rounded p-3 mb-3">
+                  <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4 class="h6 mb-0">Position {{ i + 1 }}</h4>
                   </div>
-                  <div class="item-details">
-                    <p><strong>Beschreibung:</strong> {{ item.description }}</p>
-                    <div class="item-grid">
-                      <div class="item-field">
-                        <span class="label">Menge:</span>
-                        <span class="value">{{ item.quantity }}</span>
-                      </div>
-                      <div class="item-field">
-                        <span class="label">Einzelpreis:</span>
-                        <span class="value">{{ item.unitPrice | currency:'EUR' }}</span>
-                      </div>
-                      <div class="item-field">
-                        <span class="label">MwSt-Satz:</span>
-                        <span class="value">{{ item.taxRate }}%</span>
-                      </div>
+                  <div class="row">
+                    <div class="col-12 mb-3">
+                      <strong>Beschreibung:</strong> {{ item.description }}
                     </div>
-                    <div class="item-totals">
-                      <div class="total-item">
-                        <span class="label">Netto:</span>
-                        <span class="amount">{{ item.netAmount | currency:'EUR' }}</span>
-                      </div>
-                      <div class="total-item">
-                        <span class="label">MwSt:</span>
-                        <span class="amount">{{ item.taxAmount | currency:'EUR' }}</span>
-                      </div>
-                      <div class="total-item">
-                        <span class="label">Brutto:</span>
-                        <span class="amount">{{ item.grossAmount | currency:'EUR' }}</span>
-                      </div>
+                    <div class="col-md-4">
+                      <strong>Menge:</strong> {{ item.quantity }}
+                    </div>
+                    <div class="col-md-4">
+                      <strong>Einzelpreis:</strong> {{ item.unitPrice | currency:'EUR' }}
+                    </div>
+                    <div class="col-md-4">
+                      <strong>MwSt-Satz:</strong> {{ item.taxRate }}%
+                    </div>
+                  </div>
+                  <div class="row mt-3 pt-3 border-top">
+                    <div class="col-md-4">
+                      <strong>Netto:</strong><br>
+                      <span class="text-primary">{{ item.netAmount | currency:'EUR' }}</span>
+                    </div>
+                    <div class="col-md-4">
+                      <strong>MwSt:</strong><br>
+                      <span class="text-muted">{{ item.taxAmount | currency:'EUR' }}</span>
+                    </div>
+                    <div class="col-md-4">
+                      <strong>Brutto:</strong><br>
+                      <span class="fw-bold">{{ item.grossAmount | currency:'EUR' }}</span>
                     </div>
                   </div>
                 </div>
@@ -158,65 +193,72 @@ import { Offer, OfferStatus } from '../../../core/models/offer.models';
           </div>
 
           <!-- Right Column -->
-          <div class="detail-right">
+          <div class="col-lg-4 mb-4">
             <!-- Summary -->
-            <div class="detail-section summary-section">
-              <h2>Zusammenfassung</h2>
-              <div class="summary-grid">
-                <div class="summary-item">
-                  <span class="label">Netto-Betrag:</span>
-                  <span class="amount">{{ offer.netAmount | currency:'EUR' }}</span>
+            <div class="card shadow-sm mb-4">
+              <div class="card-header bg-white">
+                <h3 class="h5 mb-0">💰 Zusammenfassung</h3>
+              </div>
+              <div class="card-body">
+                <div class="d-flex justify-content-between mb-2">
+                  <span>Netto-Betrag:</span>
+                  <span>{{ offer.netAmount | currency:'EUR' }}</span>
                 </div>
-                <div class="summary-item">
-                  <span class="label">MwSt:</span>
-                  <span class="amount">{{ offer.taxAmount | currency:'EUR' }}</span>
+                <div class="d-flex justify-content-between mb-2">
+                  <span>MwSt:</span>
+                  <span>{{ offer.taxAmount | currency:'EUR' }}</span>
                 </div>
-                <div class="summary-item">
-                  <span class="label">Brutto-Betrag:</span>
-                  <span class="amount">{{ offer.grossAmount | currency:'EUR' }}</span>
+                <div class="d-flex justify-content-between mb-2">
+                  <span>Brutto-Betrag:</span>
+                  <span>{{ offer.grossAmount | currency:'EUR' }}</span>
                 </div>
-                <div *ngIf="offer.discountAmount && offer.discountAmount > 0" class="summary-item">
-                  <span class="label">Rabatt:</span>
-                  <span class="amount discount">-{{ offer.discountAmount | currency:'EUR' }}</span>
+                <div *ngIf="offer.discountAmount && offer.discountAmount > 0" class="d-flex justify-content-between mb-2">
+                  <span>Rabatt:</span>
+                  <span class="text-danger">-{{ offer.discountAmount | currency:'EUR' }}</span>
                 </div>
-                <div class="summary-item final">
-                  <span class="label">Endbetrag:</span>
-                  <span class="amount">{{ offer.finalAmount | currency:'EUR' }}</span>
+                <hr>
+                <div class="d-flex justify-content-between fw-bold fs-5">
+                  <span>Endbetrag:</span>
+                  <span class="text-success">{{ offer.finalAmount | currency:'EUR' }}</span>
                 </div>
               </div>
             </div>
 
             <!-- Actions -->
-            <div class="detail-section">
-              <h2>Aktionen</h2>
-              <div class="actions-grid">
-                <button 
-                  *ngIf="offer.status === 'DRAFT'"
-                  (click)="markAsSent()" 
-                  class="action-button send-button">
-                  📤 Versenden
-                </button>
-                <button 
-                  *ngIf="offer.status === 'SENT'"
-                  (click)="markAsPaid()" 
-                  class="action-button paid-button">
-                  💰 Als bezahlt markieren
-                </button>
-                <button 
-                  (click)="downloadPdf()" 
-                  class="action-button pdf-button">
-                  📄 PDF herunterladen
-                </button>
-                <button 
-                  [routerLink]="['/offers', offer.id, 'edit']" 
-                  class="action-button edit-button">
-                  ✏️ Bearbeiten
-                </button>
-                <button 
-                  (click)="deleteOffer()" 
-                  class="action-button delete-button">
-                  🗑️ Löschen
-                </button>
+            <div class="card shadow-sm">
+              <div class="card-header bg-white">
+                <h3 class="h5 mb-0">⚡ Aktionen</h3>
+              </div>
+              <div class="card-body">
+                <div class="d-grid gap-2">
+                  <button 
+                    *ngIf="offer.status === 'DRAFT'"
+                    (click)="markAsSent()" 
+                    class="btn btn-success">
+                    📤 Versenden
+                  </button>
+                  <button 
+                    *ngIf="offer.status === 'SENT'"
+                    (click)="markAsPaid()" 
+                    class="btn btn-primary">
+                    💰 Als bezahlt markieren
+                  </button>
+                  <button 
+                    (click)="downloadPdf()" 
+                    class="btn btn-outline-primary">
+                    📄 PDF herunterladen
+                  </button>
+                  <button 
+                    [routerLink]="['/offers', offer.id, 'edit']" 
+                    class="btn btn-outline-secondary">
+                    ✏️ Bearbeiten
+                  </button>
+                  <button 
+                    (click)="deleteOffer()" 
+                    class="btn btn-outline-danger">
+                    🗑️ Löschen
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -322,15 +364,15 @@ export class OfferDetailComponent implements OnInit {
   getStatusBadgeClass(status: OfferStatus): string {
     switch (status) {
       case OfferStatus.DRAFT:
-        return 'status-badge draft';
+        return 'bg-warning';
       case OfferStatus.SENT:
-        return 'status-badge sent';
+        return 'bg-info';
       case OfferStatus.PAID:
-        return 'status-badge paid';
+        return 'bg-success';
       case OfferStatus.OVERDUE:
-        return 'status-badge overdue';
+        return 'bg-danger';
       default:
-        return 'status-badge draft';
+        return 'bg-secondary';
     }
   }
 } 

@@ -13,6 +13,11 @@ export const routes: Routes = [
     canActivate: [AuthGuard]
   },
   { 
+    path: 'profile', 
+    loadComponent: () => import('./features/user-profile/user-profile.component').then(m => m.UserProfileComponent),
+    canActivate: [AuthGuard]
+  },
+  { 
     path: 'customers', 
     loadComponent: () => import('./features/customers/customer-list/customer-list.component').then(m => m.CustomerListComponent),
     canActivate: [AuthGuard]
@@ -23,7 +28,7 @@ export const routes: Routes = [
     canActivate: [AuthGuard]
   },
   { 
-    path: 'customers/pipeline', 
+    path: 'pipeline', 
     loadComponent: () => import('./features/pipeline/pipeline.component').then(m => m.PipelineComponent),
     canActivate: [AuthGuard]
   },

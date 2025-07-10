@@ -1,96 +1,120 @@
-<div class="dashboard-container">
-  <header class="dashboard-header">
-    <div class="header-content">
-      <h1>🏢 CRM v3 Dashboard</h1>
-      <div class="user-info">
-        <span>Willkommen, {{ currentUser?.firstName }} {{ currentUser?.lastName }}</span>
-        <button (click)="logout()" class="logout-button">
-          🚪 Abmelden
-        </button>
-      </div>
-    </div>
-  </header>
-
-  <main class="dashboard-main">
-    <div class="welcome-card">
-      <h2>Willkommen im CRM v3</h2>
-      <div class="user-details">
-        <div class="detail-item">
-          <strong>Benutzername:</strong> {{ currentUser?.username || 'Unbekannt' }}
-        </div>
-        <div class="detail-item">
-          <strong>E-Mail:</strong> {{ currentUser?.email || 'Unbekannt' }}
-        </div>
-        <div class="detail-item">
-          <strong>Rolle:</strong> {{ getRoleDisplayName() }}
-        </div>
-        <div class="detail-item">
-          <strong>Status:</strong> 
-          <span class="status-badge" [class]="currentUser?.enabled ? 'status-active' : 'status-inactive'">
-            {{ currentUser?.enabled ? 'Aktiv' : 'Inaktiv' }}
-          </span>
-        </div>
-        <div class="detail-item" *ngIf="currentUser?.createdAt">
-          <strong>Registriert:</strong> {{ formatDate(currentUser?.createdAt) }}
-        </div>
-        <div class="detail-item" *ngIf="currentUser?.lastLogin">
-          <strong>Letzter Login:</strong> {{ formatDate(currentUser?.lastLogin) }}
-        </div>
-      </div>
-    </div>
-
-    <div class="quick-actions">
-      <h3>🚀 Schnellzugriff</h3>
-      <div class="action-buttons">
-        <button (click)="navigateToCustomers()" class="action-button primary">
-          👥 Kunden verwalten
-        </button>
-        <button (click)="navigateToOffers()" class="action-button secondary">
-          📄 Angebote
-        </button>
-        <button (click)="navigateToPipeline()" class="action-button secondary">
-          📈 Pipeline
-        </button>
-        <button *ngIf="isAdmin()" (click)="navigateToStatistics()" class="action-button admin">
-          📊 Statistiken
-        </button>
-      </div>
-    </div>
-
-    <div class="stats-overview" *ngIf="isAdmin()">
-      <div class="stats-header">
-        <h3>📈 Übersicht</h3>
-        <button (click)="refreshStats()" class="refresh-button" title="Statistiken aktualisieren">
-          🔄
-        </button>
-      </div>
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-icon">👥</div>
-          <div class="stat-content">
-            <div class="stat-value">{{ customerStats.total || 0 }}</div>
-            <div class="stat-label">Gesamt Kunden</div>
+<div class="container-fluid min-vh-100 bg-light">
+  <!-- Main Content -->
+  <main class="container-fluid py-5 px-4">
+    <div class="row">
+      <!-- Welcome Card -->
+      <div class="col-lg-8 mb-5">
+        <div class="card shadow-sm h-100">
+          <div class="card-header bg-white py-4">
+            <h2 class="h4 mb-0">Willkommen im CRM v3</h2>
+          </div>
+          <div class="card-body p-4">
+            <div class="row">
+              <div class="col-md-6">
+                <div class="mb-4">
+                  <strong>Benutzername:</strong> {{ currentUser?.username || 'Unbekannt' }}
+                </div>
+                <div class="mb-4">
+                  <strong>E-Mail:</strong> {{ currentUser?.email || 'Unbekannt' }}
+                </div>
+                <div class="mb-4">
+                  <strong>Rolle:</strong> {{ getRoleDisplayName() }}
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="mb-4">
+                  <strong>Status:</strong> 
+                  <span class="badge ms-2" [class]="currentUser?.enabled ? 'bg-success' : 'bg-danger'">
+                    {{ currentUser?.enabled ? 'Aktiv' : 'Inaktiv' }}
+                  </span>
+                </div>
+                <div class="mb-4" *ngIf="currentUser?.createdAt">
+                  <strong>Registriert:</strong> {{ formatDate(currentUser?.createdAt) }}
+                </div>
+                <div class="mb-4" *ngIf="currentUser?.lastLogin">
+                  <strong>Letzter Login:</strong> {{ formatDate(currentUser?.lastLogin) }}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="stat-card">
-          <div class="stat-icon">📈</div>
-          <div class="stat-content">
-            <div class="stat-value">{{ customerStats.inPipeline || 0 }}</div>
-            <div class="stat-label">In Pipeline</div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="col-lg-4 mb-5">
+        <div class="card shadow-sm h-100">
+          <div class="card-header bg-white py-4">
+            <h3 class="h5 mb-0">🚀 Schnellzugriff</h3>
+          </div>
+          <div class="card-body p-4">
+            <div class="d-grid gap-3">
+              <button (click)="navigateToCustomers()" class="btn btn-primary py-3">
+                👥 Kunden verwalten
+              </button>
+              <button (click)="navigateToOffers()" class="btn btn-outline-primary py-3">
+                📄 Angebote
+              </button>
+              <button (click)="navigateToPipeline()" class="btn btn-outline-primary py-3">
+                📈 Pipeline
+              </button>
+              <button *ngIf="isAdmin()" (click)="navigateToStatistics()" class="btn btn-outline-success py-3">
+                📊 Statistiken
+              </button>
+            </div>
           </div>
         </div>
-        <div class="stat-card">
-          <div class="stat-icon">✅</div>
-          <div class="stat-content">
-            <div class="stat-value">{{ customerStats.won || 0 }}</div>
-            <div class="stat-label">Gewonnen</div>
+      </div>
+    </div>
+
+    <!-- Statistics Overview (Admin Only) -->
+    <div class="row mt-5" *ngIf="isAdmin()">
+      <div class="col-12">
+        <div class="card shadow-sm">
+          <div class="card-header bg-white d-flex justify-content-between align-items-center py-4">
+            <h3 class="h5 mb-0">📈 Übersicht</h3>
+            <button (click)="refreshStats()" class="btn btn-outline-secondary btn-sm" title="Statistiken aktualisieren">
+              🔄
+            </button>
           </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon">❌</div>
-          <div class="stat-content">
-            <div class="stat-value">{{ customerStats.lost || 0 }}</div>
-            <div class="stat-label">Verloren</div>
+          <div class="card-body p-4">
+            <div class="row">
+              <div class="col-md-3 mb-4">
+                <div class="card bg-crm-deep-forest text-white h-100">
+                  <div class="card-body text-center py-4">
+                    <div class="display-6 mb-3">👥</div>
+                    <div class="h3 mb-2">{{ customerStats.total || 0 }}</div>
+                    <div class="small">Gesamt Kunden</div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-3 mb-4">
+                <div class="card bg-crm-sage text-white h-100">
+                  <div class="card-body text-center py-4">
+                    <div class="display-6 mb-3">📈</div>
+                    <div class="h3 mb-2">{{ customerStats.inPipeline || 0 }}</div>
+                    <div class="small">In Pipeline</div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-3 mb-4">
+                <div class="card bg-crm-forest text-white h-100">
+                  <div class="card-body text-center py-4">
+                    <div class="display-6 mb-3">✅</div>
+                    <div class="h3 mb-2">{{ customerStats.won || 0 }}</div>
+                    <div class="small">Gewonnen</div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-3 mb-4">
+                <div class="card bg-crm-dark-forest text-white h-100">
+                  <div class="card-body text-center py-4">
+                    <div class="display-6 mb-3">❌</div>
+                    <div class="h3 mb-2">{{ customerStats.lost || 0 }}</div>
+                    <div class="small">Verloren</div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

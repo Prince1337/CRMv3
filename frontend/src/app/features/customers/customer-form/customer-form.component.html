@@ -1,349 +1,430 @@
-<div class="customer-form-container">
-    <header class="form-header">
-      <div class="header-content">
-        <h1>{{ isEditMode ? 'Kunde bearbeiten' : 'Neuen Kunden erstellen' }}</h1>
-        <button (click)="goBack()" class="btn-secondary">
-          ← Zurück zur Liste
-        </button>
+<div class="container-fluid bg-light min-vh-100">
+  <!-- Header -->
+  <div class="container-fluid py-4">
+    <div class="row mb-4">
+      <div class="col-12">
+        <div class="card shadow-sm">
+          <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center">
+              <button class="btn btn-outline-secondary me-3" (click)="goBack()">
+                ← Zurück zur Liste
+              </button>
+              <h1 class="h3 mb-0">
+                {{ isEditMode ? '✏️ Kunde bearbeiten' : '👥 Neuen Kunden erstellen' }}
+              </h1>
+            </div>
+          </div>
+        </div>
       </div>
-    </header>
+    </div>
 
     <!-- Fehlermeldung -->
-    <div *ngIf="error" class="error-message">
-      {{ error }}
+    <div *ngIf="error" class="row mb-4">
+      <div class="col-12">
+        <div class="alert alert-danger">
+          ⚠️ {{ error }}
+        </div>
+      </div>
     </div>
 
     <!-- Ladeindikator -->
-    <div *ngIf="loading" class="loading">
-      <div class="spinner"></div>
-      <p>{{ isEditMode ? 'Lade Kundendaten...' : 'Erstelle Kunde...' }}</p>
+    <div *ngIf="loading" class="row">
+      <div class="col-12">
+        <div class="card shadow-sm">
+          <div class="card-body text-center py-5">
+            <div class="spinner-border text-primary mb-3" role="status">
+              <span class="visually-hidden">Lädt...</span>
+            </div>
+            <p class="text-muted">
+              {{ isEditMode ? 'Lade Kundendaten...' : 'Erstelle Kunde...' }}
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Formular -->
-    <form *ngIf="!loading" [formGroup]="customerForm" (ngSubmit)="onSubmit()" class="customer-form">
-      <div class="form-sections">
-        <!-- Persönliche Daten -->
-        <div class="form-section">
-          <h2>Persönliche Daten</h2>
-          <div class="form-row">
-            <div class="form-field">
-              <label for="firstName">Vorname *</label>
-              <input 
-                type="text" 
-                id="firstName" 
-                formControlName="firstName"
-                [class.invalid]="isFieldInvalid('firstName')"
-                placeholder="Vorname eingeben"
-              />
-              <div class="error-message" *ngIf="isFieldInvalid('firstName')">
-                {{ getErrorMessage('firstName') }}
+    <form *ngIf="!loading" [formGroup]="customerForm" (ngSubmit)="onSubmit()">
+      <div class="row">
+        <!-- Hauptinhalt -->
+        <div class="col-lg-8">
+          <div class="row">
+            <!-- Persönliche Daten -->
+            <div class="col-12 mb-4">
+              <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                  <h5 class="mb-0">
+                    👤 Persönliche Daten
+                  </h5>
+                </div>
+                <div class="card-body">
+                  <div class="row g-3">
+                    <div class="col-md-6">
+                      <label for="firstName" class="form-label">Vorname *</label>
+                      <input 
+                        type="text" 
+                        id="firstName" 
+                        class="form-control"
+                        formControlName="firstName"
+                        [class.is-invalid]="isFieldInvalid('firstName')"
+                        placeholder="Vorname eingeben"
+                      />
+                      <div class="invalid-feedback" *ngIf="isFieldInvalid('firstName')">
+                        {{ getErrorMessage('firstName') }}
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <label for="lastName" class="form-label">Nachname *</label>
+                      <input 
+                        type="text" 
+                        id="lastName" 
+                        class="form-control"
+                        formControlName="lastName"
+                        [class.is-invalid]="isFieldInvalid('lastName')"
+                        placeholder="Nachname eingeben"
+                      />
+                      <div class="invalid-feedback" *ngIf="isFieldInvalid('lastName')">
+                        {{ getErrorMessage('lastName') }}
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <label for="email" class="form-label">E-Mail *</label>
+                      <input 
+                        type="email" 
+                        id="email" 
+                        class="form-control"
+                        formControlName="email"
+                        [class.is-invalid]="isFieldInvalid('email')"
+                        placeholder="E-Mail-Adresse eingeben"
+                      />
+                      <div class="invalid-feedback" *ngIf="isFieldInvalid('email')">
+                        {{ getErrorMessage('email') }}
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <label for="phone" class="form-label">Telefon</label>
+                      <input 
+                        type="tel" 
+                        id="phone" 
+                        class="form-control"
+                        formControlName="phone"
+                        placeholder="Telefonnummer eingeben"
+                      />
+                    </div>
+                    <div class="col-md-6">
+                      <label for="mobile" class="form-label">Mobil</label>
+                      <input 
+                        type="tel" 
+                        id="mobile" 
+                        class="form-control"
+                        formControlName="mobile"
+                        placeholder="Mobilnummer eingeben"
+                      />
+                    </div>
+                    <div class="col-md-6">
+                      <label for="website" class="form-label">Website</label>
+                      <input 
+                        type="url" 
+                        id="website" 
+                        class="form-control"
+                        formControlName="website"
+                        placeholder="https://www.example.com"
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
-            <div class="form-field">
-              <label for="lastName">Nachname *</label>
-              <input 
-                type="text" 
-                id="lastName" 
-                formControlName="lastName"
-                [class.invalid]="isFieldInvalid('lastName')"
-                placeholder="Nachname eingeben"
-              />
-              <div class="error-message" *ngIf="isFieldInvalid('lastName')">
-                {{ getErrorMessage('lastName') }}
+
+            <!-- Firmendaten -->
+            <div class="col-12 mb-4">
+              <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                  <h5 class="mb-0">
+                    🏢 Firmendaten
+                  </h5>
+                </div>
+                <div class="card-body">
+                  <div class="row g-3">
+                    <div class="col-md-6">
+                      <label for="companyName" class="form-label">Firmenname</label>
+                      <input 
+                        type="text" 
+                        id="companyName" 
+                        class="form-control"
+                        formControlName="companyName"
+                        placeholder="Firmenname eingeben"
+                      />
+                    </div>
+                    <div class="col-md-6">
+                      <label for="position" class="form-label">Position</label>
+                      <input 
+                        type="text" 
+                        id="position" 
+                        class="form-control"
+                        formControlName="position"
+                        placeholder="Position eingeben"
+                      />
+                    </div>
+                    <div class="col-md-6">
+                      <label for="department" class="form-label">Abteilung</label>
+                      <input 
+                        type="text" 
+                        id="department" 
+                        class="form-control"
+                        formControlName="department"
+                        placeholder="Abteilung eingeben"
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-          <div class="form-row">
-            <div class="form-field">
-              <label for="email">E-Mail *</label>
-              <input 
-                type="email" 
-                id="email" 
-                formControlName="email"
-                [class.invalid]="isFieldInvalid('email')"
-                placeholder="E-Mail-Adresse eingeben"
-              />
-              <div class="error-message" *ngIf="isFieldInvalid('email')">
-                {{ getErrorMessage('email') }}
+
+            <!-- Adresse -->
+            <div class="col-12 mb-4">
+              <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                  <h5 class="mb-0">
+                    📍 Adresse
+                  </h5>
+                </div>
+                <div class="card-body">
+                  <div class="row g-3">
+                    <div class="col-md-8">
+                      <label for="street" class="form-label">Straße</label>
+                      <input 
+                        type="text" 
+                        id="street" 
+                        class="form-control"
+                        formControlName="street"
+                        placeholder="Straße eingeben"
+                      />
+                    </div>
+                    <div class="col-md-4">
+                      <label for="houseNumber" class="form-label">Hausnummer</label>
+                      <input 
+                        type="text" 
+                        id="houseNumber" 
+                        class="form-control"
+                        formControlName="houseNumber"
+                        placeholder="Hausnummer eingeben"
+                      />
+                    </div>
+                    <div class="col-md-4">
+                      <label for="postalCode" class="form-label">PLZ</label>
+                      <input 
+                        type="text" 
+                        id="postalCode" 
+                        class="form-control"
+                        formControlName="postalCode"
+                        placeholder="PLZ eingeben"
+                      />
+                    </div>
+                    <div class="col-md-4">
+                      <label for="city" class="form-label">Stadt</label>
+                      <input 
+                        type="text" 
+                        id="city" 
+                        class="form-control"
+                        formControlName="city"
+                        placeholder="Stadt eingeben"
+                      />
+                    </div>
+                    <div class="col-md-4">
+                      <label for="country" class="form-label">Land</label>
+                      <input 
+                        type="text" 
+                        id="country" 
+                        class="form-control"
+                        formControlName="country"
+                        placeholder="Land eingeben"
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
-            <div class="form-field">
-              <label for="phone">Telefon</label>
-              <input 
-                type="tel" 
-                id="phone" 
-                formControlName="phone"
-                placeholder="Telefonnummer eingeben"
-              />
+
+            <!-- Status und Quellen -->
+            <div class="col-12 mb-4">
+              <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                  <h5 class="mb-0">
+                    🏷️ Status und Quellen
+                  </h5>
+                </div>
+                <div class="card-body">
+                  <div class="row g-3">
+                    <div class="col-md-6">
+                      <label for="status" class="form-label">Status *</label>
+                      <select 
+                        id="status" 
+                        class="form-select"
+                        formControlName="status"
+                        [class.is-invalid]="isFieldInvalid('status')"
+                      >
+                        <option value="">Status auswählen</option>
+                        <option value="NEW">Neu</option>
+                        <option value="CONTACTED">Kontaktiert</option>
+                        <option value="OFFER_CREATED">Angebot erstellt</option>
+                        <option value="WON">Gewonnen</option>
+                        <option value="LOST">Verloren</option>
+                        <option value="POTENTIAL">Potenziell</option>
+                        <option value="ACTIVE">Aktiv</option>
+                        <option value="INACTIVE">Inaktiv</option>
+                      </select>
+                      <div class="invalid-feedback" *ngIf="isFieldInvalid('status')">
+                        {{ getErrorMessage('status') }}
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <label for="source" class="form-label">Quelle</label>
+                      <input 
+                        type="text" 
+                        id="source" 
+                        class="form-control"
+                        formControlName="source"
+                        placeholder="Quelle eingeben"
+                      />
+                    </div>
+                    <div class="col-md-6">
+                      <label for="priority" class="form-label">Priorität</label>
+                      <select 
+                        id="priority" 
+                        class="form-select"
+                        formControlName="priority"
+                      >
+                        <option value="">Priorität auswählen</option>
+                        <option value="LOW">Niedrig</option>
+                        <option value="MEDIUM">Mittel</option>
+                        <option value="HIGH">Hoch</option>
+                      </select>
+                    </div>
+                    <div class="col-md-6">
+                      <label for="tags" class="form-label">Tags</label>
+                      <input 
+                        type="text" 
+                        id="tags" 
+                        class="form-control"
+                        formControlName="tags"
+                        placeholder="Tags durch Komma getrennt"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
-          <div class="form-row">
-            <div class="form-field">
-              <label for="mobile">Mobil</label>
-              <input 
-                type="tel" 
-                id="mobile" 
-                formControlName="mobile"
-                placeholder="Mobilnummer eingeben"
-              />
-            </div>
-            <div class="form-field">
-              <label for="website">Website</label>
-              <input 
-                type="url" 
-                id="website" 
-                formControlName="website"
-                placeholder="https://www.example.com"
-              />
+
+            <!-- Notizen -->
+            <div class="col-12 mb-4">
+              <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                  <h5 class="mb-0">
+                    📝 Notizen
+                  </h5>
+                </div>
+                <div class="card-body">
+                  <div class="row g-3">
+                    <div class="col-12">
+                      <label for="notes" class="form-label">Öffentliche Notizen</label>
+                      <textarea 
+                        id="notes" 
+                        class="form-control"
+                        formControlName="notes"
+                        rows="3"
+                        placeholder="Öffentliche Notizen eingeben"
+                      ></textarea>
+                    </div>
+                    <div class="col-12">
+                      <label for="internalNotes" class="form-label">Interne Notizen</label>
+                      <textarea 
+                        id="internalNotes" 
+                        class="form-control"
+                        formControlName="internalNotes"
+                        rows="3"
+                        placeholder="Interne Notizen eingeben"
+                      ></textarea>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- Firmendaten -->
-        <div class="form-section">
-          <h2>Firmendaten</h2>
-          <div class="form-row">
-            <div class="form-field">
-              <label for="companyName">Firmenname</label>
-              <input 
-                type="text" 
-                id="companyName" 
-                formControlName="companyName"
-                placeholder="Firmenname eingeben"
-              />
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+          <!-- Aktionen -->
+          <div class="card shadow-sm mb-4">
+            <div class="card-header bg-light">
+              <h5 class="mb-0">
+                ⚙️ Aktionen
+              </h5>
             </div>
-            <div class="form-field">
-              <label for="position">Position</label>
-              <input 
-                type="text" 
-                id="position" 
-                formControlName="position"
-                placeholder="Position eingeben"
-              />
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-field">
-              <label for="department">Abteilung</label>
-              <input 
-                type="text" 
-                id="department" 
-                formControlName="department"
-                placeholder="Abteilung eingeben"
-              />
-            </div>
-          </div>
-        </div>
-
-        <!-- Adresse -->
-        <div class="form-section">
-          <h2>Adresse</h2>
-          <div class="form-row">
-            <div class="form-field">
-              <label for="street">Straße</label>
-              <input 
-                type="text" 
-                id="street" 
-                formControlName="street"
-                placeholder="Straße eingeben"
-              />
-            </div>
-            <div class="form-field">
-              <label for="houseNumber">Hausnummer</label>
-              <input 
-                type="text" 
-                id="houseNumber" 
-                formControlName="houseNumber"
-                placeholder="Hausnummer eingeben"
-              />
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-field">
-              <label for="postalCode">PLZ</label>
-              <input 
-                type="text" 
-                id="postalCode" 
-                formControlName="postalCode"
-                placeholder="PLZ eingeben"
-              />
-            </div>
-            <div class="form-field">
-              <label for="city">Stadt</label>
-              <input 
-                type="text" 
-                id="city" 
-                formControlName="city"
-                placeholder="Stadt eingeben"
-              />
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-field">
-              <label for="country">Land</label>
-              <input 
-                type="text" 
-                id="country" 
-                formControlName="country"
-                placeholder="Land eingeben"
-              />
-            </div>
-          </div>
-        </div>
-
-        <!-- Status und Quellen -->
-        <div class="form-section">
-          <h2>Status und Quellen</h2>
-          <div class="form-row">
-            <div class="form-field">
-              <label for="status">Status *</label>
-              <select 
-                id="status" 
-                formControlName="status"
-                [class.invalid]="isFieldInvalid('status')"
-              >
-                <option [value]="CustomerStatus.NEW">Neu</option>
-                <option [value]="CustomerStatus.CONTACTED">Kontaktiert</option>
-                <option [value]="CustomerStatus.OFFER_CREATED">Angebot erstellt</option>
-                <option [value]="CustomerStatus.WON">Gewonnen</option>
-                <option [value]="CustomerStatus.LOST">Verloren</option>
-                <option [value]="CustomerStatus.POTENTIAL">Potenziell</option>
-                <option [value]="CustomerStatus.ACTIVE">Aktiv</option>
-                <option [value]="CustomerStatus.INACTIVE">Inaktiv</option>
-              </select>
-              <div class="error-message" *ngIf="isFieldInvalid('status')">
-                {{ getErrorMessage('status') }}
-              </div>
-            </div>
-            <div class="form-field">
-              <label for="leadSource">Quelle *</label>
-              <select 
-                id="leadSource" 
-                formControlName="leadSource"
-                [class.invalid]="isFieldInvalid('leadSource')"
-              >
-                <option *ngFor="let source of leadSourceValues" [value]="source">
-                  {{ customerService.getLeadSourceDisplayName(source) }}
-                </option>
-              </select>
-              <div class="error-message" *ngIf="isFieldInvalid('leadSource')">
-                {{ getErrorMessage('leadSource') }}
+            <div class="card-body">
+              <div class="d-grid gap-2">
+                <button 
+                  type="submit" 
+                  class="btn btn-primary"
+                  [disabled]="customerForm.invalid || loading"
+                >
+                  <span *ngIf="!loading">
+                    <i class="bi bi-check-circle me-2"></i>
+                    {{ isEditMode ? 'Aktualisieren' : 'Erstellen' }}
+                  </span>
+                  <span *ngIf="loading">
+                    <div class="spinner-border spinner-border-sm me-2" role="status">
+                      <span class="visually-hidden">Lädt...</span>
+                    </div>
+                    {{ isEditMode ? 'Aktualisiere...' : 'Erstelle...' }}
+                  </span>
+                </button>
+                <button 
+                  type="button" 
+                  class="btn btn-outline-secondary"
+                  (click)="goBack()"
+                >
+                  <i class="bi bi-x-circle me-2"></i>
+                  Abbrechen
+                </button>
               </div>
             </div>
           </div>
-          <div class="form-row">
-            <div class="form-field">
-              <label for="tags">Tags</label>
-              <input 
-                type="text" 
-                id="tags" 
-                formControlName="tags"
-                placeholder="Tags durch Komma getrennt"
-              />
-            </div>
-          </div>
-        </div>
 
-        <!-- Pipeline-Management -->
-        <div class="form-section">
-          <h2>Pipeline-Management</h2>
-          <div class="form-row">
-            <div class="form-field">
-              <label for="priority">Priorität *</label>
-              <select 
-                id="priority" 
-                formControlName="priority"
-                [class.invalid]="isFieldInvalid('priority')"
-              >
-                <option [value]="CustomerPriority.LOW">Niedrig</option>
-                <option [value]="CustomerPriority.MEDIUM">Mittel</option>
-                <option [value]="CustomerPriority.HIGH">Hoch</option>
-                <option [value]="CustomerPriority.VIP">VIP</option>
-              </select>
-              <div class="error-message" *ngIf="isFieldInvalid('priority')">
-                {{ getErrorMessage('priority') }}
+          <!-- Formular-Status -->
+          <div class="card shadow-sm">
+            <div class="card-header bg-light">
+              <h5 class="mb-0">
+                ℹ️ Formular-Status
+              </h5>
+            </div>
+            <div class="card-body">
+              <div class="mb-3">
+                <div class="d-flex justify-content-between">
+                  <span>Formular gültig:</span>
+                  <span [class]="customerForm.valid ? 'text-success' : 'text-danger'">
+                    <i class="bi" [class]="customerForm.valid ? 'bi-check-circle' : 'bi-x-circle'"></i>
+                    {{ customerForm.valid ? 'Ja' : 'Nein' }}
+                  </span>
+                </div>
+              </div>
+              <div class="mb-3">
+                <div class="d-flex justify-content-between">
+                  <span>Geändert:</span>
+                  <span [class]="customerForm.dirty ? 'text-warning' : 'text-muted'">
+                    <i class="bi" [class]="customerForm.dirty ? 'bi-pencil' : 'bi-dash'"></i>
+                    {{ customerForm.dirty ? 'Ja' : 'Nein' }}
+                  </span>
+                </div>
+              </div>
+              <div class="small text-muted">
+                * Pflichtfelder müssen ausgefüllt werden
               </div>
             </div>
-            <div class="form-field">
-              <label for="estimatedValue">Geschätzter Wert (€)</label>
-              <input 
-                type="number" 
-                id="estimatedValue" 
-                formControlName="estimatedValue"
-                placeholder="z.B. 50000"
-                min="0"
-              />
-            </div>
-            <div class="form-field">
-              <label for="probability">Wahrscheinlichkeit (%)</label>
-              <input 
-                type="number" 
-                id="probability" 
-                formControlName="probability"
-                placeholder="z.B. 75"
-                min="0"
-                max="100"
-              />
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-field">
-              <label for="expectedCloseDate">Erwartetes Abschlussdatum</label>
-              <input 
-                type="date" 
-                id="expectedCloseDate" 
-                formControlName="expectedCloseDate"
-              />
-            </div>
           </div>
         </div>
-
-        <!-- Notizen -->
-        <div class="form-section">
-          <h2>Notizen</h2>
-          <div class="form-row">
-            <div class="form-field full-width">
-              <label for="notes">Öffentliche Notizen</label>
-              <textarea 
-                id="notes" 
-                formControlName="notes"
-                rows="3"
-                placeholder="Öffentliche Notizen eingeben..."
-              ></textarea>
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-field full-width">
-              <label for="internalNotes">Interne Notizen</label>
-              <textarea 
-                id="internalNotes" 
-                formControlName="internalNotes"
-                rows="3"
-                placeholder="Interne Notizen eingeben..."
-              ></textarea>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Formular-Aktionen -->
-      <div class="form-actions">
-        <button 
-          type="button" 
-          (click)="goBack()" 
-          class="btn-secondary"
-          [disabled]="submitting"
-        >
-          Abbrechen
-        </button>
-        <button 
-          type="submit" 
-          class="btn-primary"
-          [disabled]="customerForm.invalid || submitting"
-        >
-          <span *ngIf="!submitting">{{ isEditMode ? 'Aktualisieren' : 'Erstellen' }}</span>
-          <span *ngIf="submitting">Speichern...</span>
-        </button>
       </div>
     </form>
   </div>
+</div>

@@ -10,107 +10,7 @@ import { CustomerStatisticsResponse } from '../../core/models/customer.models';
   selector: 'app-dashboard',
   standalone: true,
   imports: [CommonModule],
-  template: `
-    <div class="dashboard-container">
-      <header class="dashboard-header">
-        <div class="header-content">
-          <h1>🏢 CRM v3 Dashboard</h1>
-          <div class="user-info">
-            <span>Willkommen, {{ currentUser?.firstName }} {{ currentUser?.lastName }}</span>
-            <button (click)="logout()" class="logout-button">
-              🚪 Abmelden
-            </button>
-          </div>
-        </div>
-      </header>
-
-      <main class="dashboard-main">
-        <div class="welcome-card">
-          <h2>Willkommen im CRM v3</h2>
-          <div class="user-details">
-            <div class="detail-item">
-              <strong>Benutzername:</strong> {{ currentUser?.username || 'Unbekannt' }}
-            </div>
-            <div class="detail-item">
-              <strong>E-Mail:</strong> {{ currentUser?.email || 'Unbekannt' }}
-            </div>
-            <div class="detail-item">
-              <strong>Rolle:</strong> {{ getRoleDisplayName() }}
-            </div>
-            <div class="detail-item">
-              <strong>Status:</strong> 
-              <span class="status-badge" [class]="currentUser?.enabled ? 'status-active' : 'status-inactive'">
-                {{ currentUser?.enabled ? 'Aktiv' : 'Inaktiv' }}
-              </span>
-            </div>
-            <div class="detail-item" *ngIf="currentUser?.createdAt">
-              <strong>Registriert:</strong> {{ formatDate(currentUser?.createdAt) }}
-            </div>
-            <div class="detail-item" *ngIf="currentUser?.lastLogin">
-              <strong>Letzter Login:</strong> {{ formatDate(currentUser?.lastLogin) }}
-            </div>
-          </div>
-        </div>
-
-        <div class="quick-actions">
-          <h3>🚀 Schnellzugriff</h3>
-          <div class="action-buttons">
-            <button (click)="navigateToCustomers()" class="action-button primary">
-              👥 Kunden verwalten
-            </button>
-            <button (click)="navigateToOffers()" class="action-button secondary">
-              📄 Angebote
-            </button>
-            <button (click)="navigateToPipeline()" class="action-button secondary">
-              📈 Pipeline
-            </button>
-            <button *ngIf="isAdmin()" (click)="navigateToStatistics()" class="action-button admin">
-              📊 Statistiken
-            </button>
-          </div>
-        </div>
-
-        <div class="stats-overview" *ngIf="isAdmin()">
-          <div class="stats-header">
-            <h3>📈 Übersicht</h3>
-            <button (click)="refreshStats()" class="refresh-button" title="Statistiken aktualisieren">
-              🔄
-            </button>
-          </div>
-          <div class="stats-grid">
-            <div class="stat-card">
-              <div class="stat-icon">👥</div>
-              <div class="stat-content">
-                <div class="stat-value">{{ customerStats.total || 0 }}</div>
-                <div class="stat-label">Gesamt Kunden</div>
-              </div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-icon">📈</div>
-              <div class="stat-content">
-                <div class="stat-value">{{ customerStats.inPipeline || 0 }}</div>
-                <div class="stat-label">In Pipeline</div>
-              </div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-icon">✅</div>
-              <div class="stat-content">
-                <div class="stat-value">{{ customerStats.won || 0 }}</div>
-                <div class="stat-label">Gewonnen</div>
-              </div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-icon">❌</div>
-              <div class="stat-content">
-                <div class="stat-value">{{ customerStats.lost || 0 }}</div>
-                <div class="stat-label">Verloren</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </main>
-    </div>
-  `,
+  templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss']
 })
 export class DashboardComponent implements OnInit, OnDestroy {
@@ -155,31 +55,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
   }
 
-  logout(): void {
-    console.log('Logout wird ausgeführt...');
-    
-    // Sofort lokalen Logout durchführen
-    this.authService.handleLogout();
-    
-    // Backend-Logout versuchen (optional, nicht blockierend)
-    try {
-      this.authService.logout().subscribe({
-        next: (response) => {
-          console.log('Backend-Logout erfolgreich:', response);
-        },
-        error: (error) => {
-          console.error('Backend-Logout error:', error);
-          // Fehler ist nicht kritisch, lokaler Logout wurde bereits durchgeführt
-        }
-      });
-    } catch (error) {
-      console.error('Fehler beim Backend-Logout:', error);
-    }
-    
-    // Zur Login-Seite navigieren
-    this.router.navigate(['/login']);
-  }
-
   getRoleDisplayName(): string {
     if (!this.currentUser?.role) return 'Unbekannt';
     
@@ -210,7 +85,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   navigateToPipeline(): void {
-    this.router.navigate(['/customers/pipeline']);
+    this.router.navigate(['/pipeline']);
   }
 
   navigateToStatistics(): void {
